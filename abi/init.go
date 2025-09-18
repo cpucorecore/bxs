@@ -32,4 +32,5 @@ func init() {
 	FactoryAddress2ProtocolId[xlaunch.FactoryAddress] = types.ProtocolIdXLaunch
 	mapTopicToFactoryAddress(xlaunch.CreatedTopic0, xlaunch.FactoryAddress)
 	mapTopicToProtocolId(xlaunch.BuyTopic0, types.ProtocolIdXLaunch)
+	mapTopicToProtocolId(xlaunch.SellTopic0, types.ProtocolIdXLaunch)
 }
