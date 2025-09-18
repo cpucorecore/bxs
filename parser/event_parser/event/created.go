@@ -17,6 +17,7 @@ type CreatedEvent struct {
 	Symbol              string
 	URL                 string
 	Description         string
+	MintEvent           types.Event
 }
 
 func (e *CreatedEvent) CanGetPair() bool {

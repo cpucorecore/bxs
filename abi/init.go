@@ -1,8 +1,7 @@
 package abi
 
 import (
-	uniswapv2 "bxs/abi/uniswap/v2"
-	uniswapv3 "bxs/abi/uniswap/v3"
+	"bxs/abi/xlaunch"
 	"bxs/types"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -30,20 +29,7 @@ func mapTopicToFactoryAddress(topic common.Hash, factoryAddress common.Address) 
 }
 
 func init() {
-	mapTopicToProtocolId(uniswapv2.PairCreatedTopic0, types.ProtocolIdNewSwap)
-	mapTopicToProtocolId(uniswapv2.SwapTopic0, types.ProtocolIdNewSwap)
-	mapTopicToProtocolId(uniswapv2.SyncTopic0, types.ProtocolIdNewSwap)
-	mapTopicToProtocolId(uniswapv2.BurnTopic0, types.ProtocolIdNewSwap)
-	mapTopicToProtocolId(uniswapv2.MintTopic0, types.ProtocolIdNewSwap)
-
-	mapTopicToProtocolId(uniswapv3.PoolCreatedTopic0, types.ProtocolIdUniswapV3)
-	mapTopicToProtocolId(uniswapv3.SwapTopic0, types.ProtocolIdUniswapV3)
-	mapTopicToProtocolId(uniswapv3.MintTopic0, types.ProtocolIdUniswapV3)
-	mapTopicToProtocolId(uniswapv3.BurnTopic0, types.ProtocolIdUniswapV3)
-
-	FactoryAddress2ProtocolId[uniswapv2.FactoryAddress] = types.ProtocolIdNewSwap
-	FactoryAddress2ProtocolId[uniswapv3.FactoryAddress] = types.ProtocolIdUniswapV3
-
-	mapTopicToFactoryAddress(uniswapv2.PairCreatedTopic0, uniswapv2.FactoryAddress)
-	mapTopicToFactoryAddress(uniswapv3.PoolCreatedTopic0, uniswapv3.FactoryAddress)
+	FactoryAddress2ProtocolId[xlaunch.FactoryAddress] = types.ProtocolIdXLaunch
+	mapTopicToFactoryAddress(xlaunch.CreatedTopic0, xlaunch.FactoryAddress)
+	mapTopicToProtocolId(xlaunch.BuyTopic0, types.ProtocolIdXLaunch)
 }

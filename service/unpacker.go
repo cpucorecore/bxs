@@ -5,8 +5,8 @@ import (
 	"bxs/abi/ds_token"
 	uniswapv2 "bxs/abi/uniswap/v2"
 	uniswapv3 "bxs/abi/uniswap/v3"
+	"bxs/abi/xlaunch"
 	"bxs/types"
-	"bytes"
 	"errors"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -70,6 +70,14 @@ var (
 		uniswapv3.FactoryAbi,
 	})
 
+	XLaunchUnpacker = NewUnpacker([]*abi.ABI{
+		xlaunch.PairAbi,
+	})
+
+	XLaunchFactoryUnpacker = NewUnpacker([]*abi.ABI{
+		xlaunch.FactoryAbi,
+	})
+
 	Name2Unpacker = map[string]Unpacker{
 		"name":        TokenUnpacker,
 		"symbol":      TokenUnpacker,
@@ -79,6 +87,7 @@ var (
 		"token1":      UniswapV2PairUnpacker,
 		"getReserves": UniswapV2PairUnpacker,
 		"fee":         UniswapV3PoolUnpacker,
+		"token":       XLaunchUnpacker,
 	}
 )
 
@@ -90,14 +99,22 @@ func sanitizeUTF8(s string) string {
 }
 
 func ParseString(value interface{}) (string, error) {
+	var str string
+	var err error
 	switch v := value.(type) {
 	case string:
-		return v, nil
+		str = v
 	case [32]byte:
-		return sanitizeUTF8(string(bytes.ReplaceAll(v[:], []byte{0}, []byte{}))), nil
+		str = string(v[:])
 	default:
-		return "", ErrWrongString
+		err = ErrWrongString
 	}
+	if err != nil {
+		return "", err
+	}
+
+	str = strings.ReplaceAll(str, "\x00", "") // for postgres db do not accept 0x00 as string char
+	return sanitizeUTF8(str), nil
 }
 
 func ParseInt(value interface{}) (int, error) {

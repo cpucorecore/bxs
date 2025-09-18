@@ -4,6 +4,7 @@ import (
 	"bxs/abi/bep20"
 	uniswapv2 "bxs/abi/uniswap/v2"
 	uniswapv3 "bxs/abi/uniswap/v3"
+	"bxs/abi/xlaunch"
 	"encoding/hex"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -53,6 +54,10 @@ var (
 		{
 			Abi:   uniswapv3.PoolAbi,
 			Names: []string{"fee"},
+		},
+		{
+			Abi:   xlaunch.PairAbi,
+			Names: []string{"token"},
 		},
 	}
 

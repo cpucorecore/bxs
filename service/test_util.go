@@ -25,7 +25,7 @@ type TestContext struct {
 }
 
 func GetTestContext() *TestContext {
-	ethClient, err := ethclient.Dial("https://base-rpc.publicnode.com")
+	ethClient, err := ethclient.Dial("https://bsc-testnet-dataseed.bnbchain.org")
 	if err != nil {
 		panic(err)
 	}

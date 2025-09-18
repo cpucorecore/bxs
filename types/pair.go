@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	FilterCodeGetToken0 = iota + 1
+	FilterCodeGetToken = iota + 1
 	FilterCodeGetToken1
 	FilterCodeVerifyFailed
 	FilterCodeNoBaseToken

@@ -33,8 +33,12 @@ func IsUSDC(address common.Address) bool {
 	return IsSameAddress(address, USDCAddress)
 }
 
+func IsZeroAddress(address common.Address) bool {
+	return IsSameAddress(address, ZeroAddress)
+}
+
 func IsBaseToken(address common.Address) bool {
-	if IsWETH(address) || IsUSDC(address) {
+	if IsZeroAddress(address) || IsWETH(address) || IsUSDC(address) {
 		return true
 	}
 	return false

@@ -38,7 +38,7 @@ func (e *BuyEvent) GetTx(bnbPrice decimal.Decimal) *orm.Tx {
 		Program:       types.GetProtocolName(e.Pair.ProtocolId),
 	}
 
-	tx.Token0Amount, tx.Token1Amount = ParseAmountsByPair(e.NativeTokenAmount, e.TokenAmount, e.Pair)
+	tx.Token0Amount, tx.Token1Amount = ParseAmountsByPair(e.TokenAmount, e.NativeTokenAmount, e.Pair)
 	tx.AmountUsd, tx.PriceUsd = CalcAmountAndPrice(bnbPrice, tx.Token0Amount, tx.Token1Amount, e.Pair.Token1Core.Address)
 	return tx
 }

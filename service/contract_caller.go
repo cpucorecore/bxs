@@ -3,6 +3,7 @@ package service
 import (
 	uniswapv2 "bxs/abi/uniswap/v2"
 	uniswapv3 "bxs/abi/uniswap/v3"
+	"bxs/abi/xlaunch"
 	"bxs/config"
 	"bxs/metrics"
 	"bxs/types"
@@ -168,6 +169,10 @@ func (c *ContractCaller) CallToken1(address *common.Address) (common.Address, er
 	return c.queryAddress(address, "token1")
 }
 
+func (c *ContractCaller) CallToken(address *common.Address) (common.Address, error) {
+	return c.queryAddress(address, "token")
+}
+
 /*
 CallGetPair
 for uniswap/pancake v2
@@ -194,6 +199,30 @@ func (c *ContractCaller) CallGetPair(factoryAddress, token0Address, token1Addres
 	}
 
 	return ParseAddress(values[0])
+}
+
+func (c *ContractCaller) CallGetLaunchByAddress(factoryAddress, tokenAddress *common.Address) (bool, error) {
+	req := BuildCallContractReqDynamic(nil, factoryAddress, xlaunch.FactoryAbi, "getLaunchByAddress", tokenAddress)
+
+	bytes, err := c.CallContract(req)
+	if err != nil {
+		return false, err
+	}
+
+	if len(bytes) == 0 {
+		return false, ErrOutputEmpty
+	}
+
+	values, unpackErr := XLaunchFactoryUnpacker.Unpack("getLaunchByAddress", bytes, 2)
+	if unpackErr != nil {
+		return false, unpackErr
+	}
+
+	if len(values) != 2 {
+		return false, ErrWrongOutputLength
+	}
+
+	return ParseBool(values[0])
 }
 
 /*
