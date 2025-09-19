@@ -46,8 +46,8 @@ func (e *CreatedEvent) GetPoolUpdate() *types.PoolUpdate {
 		Program:       types.ProtocolNameXLaunch,
 		LogIndex:      e.EventCommon.LogIndex,
 		Address:       e.EventCommon.Pair.Address,
-		Token0Address: e.EventCommon.Pair.Token0.Address,
-		Token1Address: e.EventCommon.Pair.Token1.Address,
+		Token0Address: e.EventCommon.Pair.Token0Core.Address,
+		Token1Address: e.EventCommon.Pair.Token1Core.Address,
 		Token0Amount:  a0,
 		Token1Amount:  a1,
 	}
