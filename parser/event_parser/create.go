@@ -43,13 +43,13 @@ func (o *CreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
 		Description:         input[5].(string),
 	}
 
-	pair.Address = input[1].(common.Address)
+	pair.Address = e.PoolAddress
 	pair.Token0Core = &types.TokenCore{
-		Address: common.BytesToAddress(ethLog.Topics[1].Bytes()[12:]),
+		Address:  e.TokenAddress,
+		Symbol:   e.Symbol,
+		Decimals: 18,
 	}
-	pair.Token1Core = &types.TokenCore{
-		Address: common.BytesToAddress(ethLog.Topics[2].Bytes()[12:]),
-	}
+	pair.Token1Core = types.NativeTokenCore
 	pair.Block = ethLog.BlockNumber
 	pair.ProtocolId = abi.FactoryAddress2ProtocolId[ethLog.Address]
 

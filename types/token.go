@@ -19,6 +19,19 @@ var (
 	WETHUSDCPairAddressUniswapV2 = common.HexToAddress(WETH_USDC_PAIR)
 	WETHAddress                  = common.HexToAddress(WETH)
 	USDCAddress                  = common.HexToAddress(USDC)
+
+	NativeToken = &Token{
+		Address:  ZeroAddress,
+		Creator:  ZeroAddress,
+		Symbol:   "BNB",
+		Decimals: 18,
+	}
+
+	NativeTokenCore = &TokenCore{
+		Address:  ZeroAddress,
+		Symbol:   "BNB",
+		Decimals: 18,
+	}
 )
 
 func IsSameAddress(address1, address2 common.Address) bool {

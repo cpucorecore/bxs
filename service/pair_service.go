@@ -134,19 +134,6 @@ func (s *pairService) getToken(tokenAddress common.Address) (*types.Token, error
 	return doResult.(*types.Token), nil, false
 }
 
-var (
-	nativeToken = &types.Token{
-		Address:  types.ZeroAddress,
-		Creator:  types.ZeroAddress,
-		Symbol:   "BNB",
-		Decimals: 18,
-	}
-)
-
-func (s *pairService) getNativeToken() (*types.Token, error) {
-	return nativeToken, nil
-}
-
 func (s *pairService) getPairTokens(pair *types.Pair) *types.PairWrap {
 	pairWrap := &types.PairWrap{
 		Pair:    pair,
@@ -161,12 +148,12 @@ func (s *pairService) getPairTokens(pair *types.Pair) *types.PairWrap {
 	}
 
 	pair.Token0 = token0
-	pair.Token1 = nativeToken
+	pair.Token1 = types.NativeToken
 
 	pair.Token0Core.Symbol = token0.Symbol
 	pair.Token0Core.Decimals = token0.Decimals
-	pair.Token1Core.Symbol = nativeToken.Symbol
-	pair.Token1Core.Decimals = nativeToken.Decimals
+	pair.Token1Core.Symbol = pair.Token1.Symbol
+	pair.Token1Core.Decimals = pair.Token1.Decimals
 
 	pairWrap.NewToken0 = !fromCache
 	pairWrap.NewToken1 = false
