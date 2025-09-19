@@ -35,3 +35,20 @@ func (e *CreatedEvent) GetPair() *types.Pair {
 func (e *CreatedEvent) IsCreatePair() bool {
 	return true
 }
+
+func (e *CreatedEvent) CanGetPoolUpdate() bool {
+	return true
+}
+
+func (e *CreatedEvent) GetPoolUpdate() *types.PoolUpdate {
+	a0, a1 := ParseAmountsByPair(e.TokenInitAmount, e.BaseTokenInitAmount, e.Pair)
+	return &types.PoolUpdate{
+		Program:       types.ProtocolNameXLaunch,
+		LogIndex:      e.EventCommon.LogIndex,
+		Address:       e.EventCommon.Pair.Address,
+		Token0Address: e.EventCommon.Pair.Token0.Address,
+		Token1Address: e.EventCommon.Pair.Token1.Address,
+		Token0Amount:  a0,
+		Token1Amount:  a1,
+	}
+}

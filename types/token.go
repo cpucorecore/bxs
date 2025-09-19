@@ -42,6 +42,10 @@ func IsWETH(address common.Address) bool {
 	return IsSameAddress(address, WETHAddress)
 }
 
+func IsNativeToken(address common.Address) bool {
+	return IsSameAddress(address, ZeroAddress)
+}
+
 func IsUSDC(address common.Address) bool {
 	return IsSameAddress(address, USDCAddress)
 }

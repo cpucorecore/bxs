@@ -1,6 +1,6 @@
 package chain
 
-const BSCTestnetID uint64 = 97
-const BSCMainnetID uint64 = 56
+const BSCTestnetID int = 97
+const BSCMainnetID int = 56
 
 const ID = BSCTestnetID

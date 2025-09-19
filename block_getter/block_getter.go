@@ -58,7 +58,7 @@ func NewBlockGetter(
 		log.Logger.Fatal("ants pool(BlockGetter) init err", zap.Error(err))
 	}
 
-	ethClientPool_ := NewEthClientPool(config.G.Chain.WsEndpoint, 16)
+	ethClientPool_ := NewEthClientPool(config.G.Chain.WsEndpoint, config.G.BlockGetter.PoolSize)
 
 	return &blockGetter{
 		subHeader:       subHeader,

@@ -23,7 +23,7 @@ func CalcAmountAndPrice(
 	token0Amount, token1Amount decimal.Decimal,
 	token1Address common.Address,
 ) (amountUSD, priceUSD decimal.Decimal) {
-	if types.IsWETH(token1Address) {
+	if types.IsNativeToken(token1Address) {
 		amountUSD = token1Amount.Mul(bnbPrice)
 		if !token0Amount.IsZero() {
 			priceUSD = amountUSD.Div(token0Amount)
