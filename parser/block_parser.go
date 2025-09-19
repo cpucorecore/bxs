@@ -114,7 +114,7 @@ func (p *blockParser) ParseBlockAsync(bw *types.ParseBlockContext) {
 
 func (p *blockParser) waitForNativeTokenPrice(blockNumber *big.Int, blockTimestamp uint64) decimal.Decimal {
 	for {
-		price, err := p.priceService.GetClosestPriceByTimestamp(int64(blockTimestamp), config.G.PriceService.TimeToleranceSec)
+		price, err := p.priceService.GetPrice(blockNumber)
 		if err != nil {
 			log.Logger.Error("get price err", zap.Error(err), zap.Any("blockNumber", blockNumber), zap.Any("blockTimestamp", blockTimestamp))
 			time.Sleep(time.Second)

@@ -22,7 +22,8 @@
             "attempts": 10,
             "delay_ms": 100,
             "timeout_ms": 5000
-        }
+        },
+        "sub_header": true
     },
     "block_handler": {
         "pool_size": 1,
@@ -31,10 +32,8 @@
     },
     "enable_sequencer": true,
     "price_service": {
-        "price_provider": "bitget",
-        "get_price_interval_sec": 1,
-        "time_tolerance_sec": 60,
-        "port": 12345
+        "mock": false,
+        "pool_size": 1
     },
     "kafka": {
         "enabled": false,
@@ -73,5 +72,6 @@
             "db_name": "test"
         }
     },
-    "metrics_port": 9100
+    "metrics_port": 9100,
+    "testnet": false
 }

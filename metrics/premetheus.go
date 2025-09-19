@@ -79,13 +79,6 @@ var (
 		Objectives: defaultObjectives,
 	})
 
-	CallContractArchiveDurationMs = prometheus.NewSummary(prometheus.SummaryOpts{
-		Name:       "call_contract_archive_duration_ms",
-		MaxAge:     defaultMaxAge,
-		AgeBuckets: defaultAgeBuckets,
-		Objectives: defaultObjectives,
-	})
-
 	CallContractErrors = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "call_contract_errors_total",
@@ -142,6 +135,13 @@ var (
 		},
 		[]string{"result"},
 	)
+
+	CallContractForBNBPrice = prometheus.NewSummary(prometheus.SummaryOpts{
+		Name:       "call_contract_bnb_price",
+		MaxAge:     defaultMaxAge,
+		AgeBuckets: defaultAgeBuckets,
+		Objectives: defaultObjectives,
+	})
 )
 
 func init() {
@@ -159,7 +159,6 @@ func init() {
 	prometheus.MustRegister(SendBlockKafkaDurationMs)
 
 	prometheus.MustRegister(CallContractDurationMs)
-	prometheus.MustRegister(CallContractArchiveDurationMs)
 	prometheus.MustRegister(CallContractErrors)
 	prometheus.MustRegister(GetPairDurationMs)
 	prometheus.MustRegister(GetTokenDurationMs)
@@ -171,6 +170,7 @@ func init() {
 	prometheus.MustRegister(Price)
 	prometheus.MustRegister(GetPriceDurationMs)
 	prometheus.MustRegister(GetPriceResult)
+	prometheus.MustRegister(CallContractForBNBPrice)
 }
 
 func Init(port int) {

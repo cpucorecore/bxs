@@ -12,6 +12,7 @@ type TxPairEvent struct {
 	PancakeV2 []Event
 	PancakeV3 []Event
 	Aerodrome []Event
+	XLaunch   []Event
 }
 
 func (tpe *TxPairEvent) AddEvent(event Event) {
@@ -26,6 +27,11 @@ func (tpe *TxPairEvent) AddEvent(event Event) {
 			tpe.UniswapV3 = make([]Event, 0, 10)
 		}
 		tpe.UniswapV3 = append(tpe.UniswapV3, event)
+	case ProtocolIdXLaunch:
+		if tpe.XLaunch == nil {
+			tpe.XLaunch = make([]Event, 0, 10)
+		}
+		tpe.XLaunch = append(tpe.XLaunch, event)
 	}
 }
 

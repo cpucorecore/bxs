@@ -13,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/shopspring/decimal"
 	"math/big"
 	"strings"
 	"time"
@@ -306,4 +307,23 @@ func (c *ContractCaller) GetReservesByBlockNumber(blockNumber *big.Int) (*big.In
 	}
 
 	return reserve0, reserve1, nil
+}
+
+func (c *ContractCaller) GetPriceByBlockNumber(blockNumber *big.Int) (decimal.Decimal, error) {
+	values, err := c.callGetReserves(blockNumber)
+	if err != nil {
+		return decimal.Zero, err
+	}
+
+	reserve0, ok0 := values[0].(*big.Int)
+	if !ok0 {
+		return decimal.Zero, ErrReserve0NotBigInt
+	}
+
+	reserve1, ok1 := values[1].(*big.Int)
+	if !ok1 {
+		return decimal.Zero, ErrReserve1NotBigInt
+	}
+
+	return decimal.NewFromBigInt(reserve1, 0).Div(decimal.NewFromBigInt(reserve0, 0)), nil
 }

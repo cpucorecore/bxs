@@ -11,7 +11,6 @@ import (
 	"bxs/sequencer"
 	"bxs/service"
 	"bxs/types"
-	"context"
 	"flag"
 	"fmt"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -81,6 +80,7 @@ func main() {
 	}
 
 	metrics.Init(config.G.MetricsPort)
+	types.InitChainConfig()
 
 	ethClient, dialEthErr := ethclient.Dial(config.G.Chain.Endpoint)
 	if dialEthErr != nil {
@@ -92,6 +92,13 @@ func main() {
 		log.Logger.Fatal("Failed to connect to the chain(ws): %v", zap.Error(err))
 	}
 
+	ethClientArchive, dialEthErrArchive := ethclient.Dial(config.G.Chain.EndpointArchive)
+	if dialEthErrArchive != nil {
+		log.Logger.Fatal("Failed to connect to the bsc archive(http): %v", zap.Error(dialEthErrArchive))
+	}
+
+	contractCallerArchive := service.NewContractCaller(ethClientArchive, config.G.ContractCaller.Retry.GetRetryParams())
+
 	redisCli := redis.NewClient(&redis.Options{
 		Addr:     config.G.Redis.Addr,
 		Username: config.G.Redis.Username,
@@ -102,7 +109,7 @@ func main() {
 	contractCaller := service.NewContractCaller(ethClient, config.G.ContractCaller.Retry.GetRetryParams())
 
 	pairService := service.NewPairService(cache, contractCaller)
-	priceService := service.NewPriceService(config.G.PriceService.PriceProvider, redisCli)
+	priceService := service.NewPriceService(config.G.PriceService.Mock, cache, contractCallerArchive, ethClientArchive, config.G.PriceService.PoolSize)
 
 	sequencerForBlockHandler := sequencer.NewSequencer()
 
@@ -123,7 +130,7 @@ func main() {
 	blockParser.Start(wg)
 
 	sequencerForBlockGetter := sequencer.NewSequencer()
-	blockGetter := block_getter.NewBlockGetter(wsEthClient, cache, sequencerForBlockGetter, config.G.BlockGetter.Retry.GetRetryParams())
+	blockGetter := block_getter.NewBlockGetter(config.G.BlockGetter.SubHeader, wsEthClient, cache, sequencerForBlockGetter, config.G.BlockGetter.Retry.GetRetryParams())
 	startBlockNumber := blockGetter.GetStartBlockNumber(config.G.BlockGetter.StartBlockNumber)
 	if startBlockNumber == 0 {
 		log.Logger.Fatal("start block number is zero")
@@ -132,9 +139,7 @@ func main() {
 	sequencerForBlockGetter.Init(startBlockNumber)
 	sequencerForBlockHandler.Init(startBlockNumber)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	priceService.Start(ctx)
-	priceService.StartApiServer(config.G.PriceService.Port)
+	priceService.Start(startBlockNumber)
 	blockGetter.Start()
 	blockGetter.StartDispatch(startBlockNumber)
 
@@ -160,5 +165,4 @@ func main() {
 	log.Logger.Info("wait all block commited")
 	wg.Wait()
 	log.Logger.Info("all block commited")
-	cancel()
 }

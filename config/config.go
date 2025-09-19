@@ -31,6 +31,7 @@ type BlockGetterConf struct {
 	QueueSize        int       `json:"queue_size"`
 	StartBlockNumber uint64    `json:"start_block_number"`
 	Retry            RetryConf `json:"retry"`
+	SubHeader        bool      `json:"sub_header"`
 }
 
 type BlockHandlerConf struct {
@@ -60,10 +61,8 @@ type RetryParams struct {
 }
 
 type PriceServiceConf struct {
-	PriceProvider       string `json:"price_provider"` // "coingecko" or "bitget"
-	GetPriceIntervalSec int    `json:"get_price_interval_sec"`
-	TimeToleranceSec    int64  `json:"time_tolerance_sec"`
-	Port                int    `json:"port"` // Port for the price service API server
+	Mock     bool `json:"mock"`
+	PoolSize int  `json:"pool_size"`
 }
 
 type KafkaConf struct {
@@ -110,6 +109,7 @@ type Config struct {
 	TxDatabase        *DBConf             `json:"tx_database"`
 	TokenPairDatabase *DBConf             `json:"token_pair_database"`
 	MetricsPort       int                 `json:"metrics_port"` // Port for Prometheus metrics
+	TestNet           bool                `json:"testnet"`
 }
 
 var (
@@ -138,6 +138,7 @@ var (
 				DelayMs:   100,
 				TimeoutMs: 5000,
 			},
+			SubHeader: false,
 		},
 		BlockHandler: &BlockHandlerConf{
 			PoolSize:        1,
@@ -146,10 +147,8 @@ var (
 		},
 		EnableSequencer: true,
 		PriceService: &PriceServiceConf{
-			PriceProvider:       "bitget",
-			GetPriceIntervalSec: 1,
-			TimeToleranceSec:    60,
-			Port:                12345,
+			Mock:     false,
+			PoolSize: 1,
 		},
 		Kafka: &KafkaConf{
 			Enabled:           false,
@@ -187,6 +186,7 @@ var (
 			},
 		},
 		MetricsPort: 9100,
+		TestNet:     false,
 	}
 
 	G = defaultConfig

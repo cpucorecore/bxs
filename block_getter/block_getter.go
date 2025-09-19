@@ -31,6 +31,7 @@ type BlockGetter interface {
 }
 
 type blockGetter struct {
+	subHeader       bool
 	ctx             context.Context
 	wsEthClient     *ethclient.Client
 	ethClientPool   EthClientPool
@@ -46,6 +47,7 @@ type blockGetter struct {
 }
 
 func NewBlockGetter(
+	subHeader bool,
 	wsEthClient *ethclient.Client,
 	cache cache.BlockCache,
 	blockSequencer sequencer.Sequencer,
@@ -59,6 +61,7 @@ func NewBlockGetter(
 	ethClientPool_ := NewEthClientPool(config.G.Chain.WsEndpoint, 16)
 
 	return &blockGetter{
+		subHeader:       subHeader,
 		ctx:             context.Background(),
 		wsEthClient:     wsEthClient,
 		ethClientPool:   ethClientPool_,
@@ -237,6 +240,23 @@ func (bg *blockGetter) reconnectWithBackoff() (ethereum.Subscription, <-chan err
 	}
 }
 
+func (bg *blockGetter) startQueryNewHead() {
+	go func() {
+		for {
+			bn, err := bg.wsEthClient.BlockNumber(bg.ctx)
+			if err != nil {
+				log.Logger.Error("ethClient.BlockNumber() err", zap.Error(err))
+				time.Sleep(time.Second)
+				continue
+			}
+
+			log.Logger.Info("New block", zap.Uint64("height", bn))
+			bg.setHeaderHeight(bn)
+			metrics.NewestHeight.Set(float64(bn))
+		}
+	}()
+}
+
 func (bg *blockGetter) startSubscribeNewHead() {
 	headerHeight, err := bg.wsEthClient.BlockNumber(bg.ctx)
 	if err != nil {
@@ -301,7 +321,11 @@ func (bg *blockGetter) dispatchRange(from, to uint64) (stopped bool, nextBlock u
 }
 
 func (bg *blockGetter) StartDispatch(startBlockNumber uint64) {
-	bg.startSubscribeNewHead()
+	if bg.subHeader {
+		bg.startSubscribeNewHead()
+	} else {
+		bg.startQueryNewHead()
+	}
 
 	go func() {
 		cur := startBlockNumber

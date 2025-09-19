@@ -29,7 +29,10 @@ func NewTopicRouter() TopicRouter {
 }
 
 func (p *topicRouter) Parse(ethLog *ethtypes.Log) (types.Event, error) {
-	log.Logger.Info(fmt.Sprintf("%s", ethLog.Topics[0].String()))
+	topic0 := ethLog.Topics[0]
+	if topic0.String() == "0x08e034a062383b8ce2fb4c25ef30ade713769d90b38db5207a7eb29b64340ef3" {
+		log.Logger.Info(fmt.Sprintf("%s", ethLog.Topics[0].String()))
+	}
 	eventParser, ok := p.topic2EventParser[ethLog.Topics[0]]
 	if !ok {
 		return nil, ErrParserNotFound

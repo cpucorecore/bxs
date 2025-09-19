@@ -50,6 +50,7 @@ func (br *BlockResult) getAllEvents() []Event {
 			events = append(events, txPairEvent.PancakeV2...)
 			events = append(events, txPairEvent.PancakeV3...)
 			events = append(events, txPairEvent.Aerodrome...)
+			events = append(events, txPairEvent.XLaunch...)
 		}
 	}
 	return events
