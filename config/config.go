@@ -9,9 +9,10 @@ import (
 )
 
 type LogConf struct {
-	Async                      bool `json:"async"`
-	AsyncBufferSizeByByte      int  `json:"async_buffer_size_by_byte"`
-	AsyncFlushIntervalBySecond int  `json:"async_flush_interval_by_second"`
+	Level                      string `json:"level"`
+	Async                      bool   `json:"async"`
+	AsyncBufferSizeByByte      int    `json:"async_buffer_size_by_byte"`
+	AsyncFlushIntervalBySecond int    `json:"async_flush_interval_by_second"`
 }
 
 type ChainConf struct {

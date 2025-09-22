@@ -2,6 +2,7 @@ package types
 
 import (
 	"github.com/ethereum/go-ethereum/common"
+	"time"
 )
 
 type TxPairEvent struct {
@@ -16,33 +17,31 @@ func (tpe *TxPairEvent) AddEvent(event Event) {
 }
 
 type TxResult struct {
-	Maker                   common.Address
-	PairCreatedEvents       []Event
-	PairAddress2TxPairEvent map[common.Address]*TxPairEvent
+	BlockTime time.Time
+	Maker     common.Address
+	Events    []Event
+	Pairs     []*Pair
+	Tokens    []*Token
 }
 
-func NewTxResult(maker common.Address) *TxResult {
+func NewTxResult(maker common.Address, blockTime time.Time) *TxResult {
 	return &TxResult{
-		Maker:                   maker,
-		PairCreatedEvents:       make([]Event, 0, 10),
-		PairAddress2TxPairEvent: make(map[common.Address]*TxPairEvent),
+		Maker:     maker,
+		BlockTime: blockTime,
+		Events:    make([]Event, 0, 32),
 	}
 }
 
-func (tr *TxResult) AddEvent(event Event) {
-	event.SetMaker(tr.Maker)
-	if event.IsCreatePair() {
-		tr.PairCreatedEvents = append(tr.PairCreatedEvents, event)
-	}
+func (r *TxResult) AddEvent(event Event) {
+	event.SetMaker(r.Maker)
+	event.SetBlockTime(r.BlockTime)
+	r.Events = append(r.Events, event)
+}
 
-	pairAddress := event.GetPairAddress()
-	txPairEvent, ok := tr.PairAddress2TxPairEvent[pairAddress]
-	if ok {
-		txPairEvent.AddEvent(event)
-		return
-	}
+func (r *TxResult) SetPairs(pairs []*Pair) {
+	r.Pairs = pairs
+}
 
-	txPairEvent = &TxPairEvent{}
-	txPairEvent.AddEvent(event)
-	tr.PairAddress2TxPairEvent[pairAddress] = txPairEvent
+func (r *TxResult) SetTokens(tokens []*Token) {
+	r.Tokens = tokens
 }

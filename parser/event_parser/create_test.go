@@ -19,7 +19,6 @@ func TestCreated(t *testing.T) {
 	require.NoError(t, pErr)
 
 	event.SetBlockTime(time.Unix(int64(blockTimestamp), 0))
-	require.True(t, event.CanGetPair())
 	pair := event.GetPair()
 	pairWrap := tc.PairService.GetPairTokens(pair)
 	event.SetPair(pairWrap.Pair)

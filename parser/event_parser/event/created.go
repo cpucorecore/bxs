@@ -19,24 +19,59 @@ type CreatedEvent struct {
 	Description         string
 }
 
-func (e *CreatedEvent) CanGetPair() bool {
-	return true
+func (e *CreatedEvent) GetPairAddress() common.Address {
+	return e.PoolAddress
 }
 
 func (e *CreatedEvent) GetPair() *types.Pair {
-	e.Pair.BlockAt = e.BlockTime
 	return e.Pair
 }
 
-func (e *CreatedEvent) CanGetToken0() bool {
-	return true
+func (e *CreatedEvent) DoGetPair() *types.Pair {
+	if e.Pair != nil {
+		return e.Pair
+	}
+
+	pair := &types.Pair{
+		Address: e.PoolAddress,
+		Token0Core: &types.TokenCore{
+			Address:  e.TokenAddress,
+			Symbol:   e.Symbol,
+			Decimals: types.DefaultDecimals,
+		},
+		Token1Core: types.NativeTokenCore,
+		Block:      e.BlockNumber,
+		BlockAt:    e.BlockTime,
+		ProtocolId: types.ProtocolIdXLaunch,
+	}
+
+	pair.Token0InitAmount, pair.Token1InitAmount = ParseAmountsByPair(e.TokenInitAmount, e.BaseTokenInitAmount, pair)
+	pair.Token0 = e.DoGetToken0()
+	e.Pair = pair
+	return e.Pair
 }
 
 func (e *CreatedEvent) GetToken0() *types.Token {
-	return e.EventCommon.GetToken0()
+	return e.Pair.Token0
 }
 
-func (e *CreatedEvent) IsCreatePair() bool {
+func (e *CreatedEvent) DoGetToken0() *types.Token {
+	return &types.Token{
+		Address:     e.TokenAddress,
+		Creator:     e.Creator,
+		Name:        e.Name,
+		Symbol:      e.Symbol,
+		Decimals:    types.DefaultDecimals,
+		BlockNumber: e.BlockNumber,
+		BlockTime:   e.BlockTime,
+		Program:     types.ProtocolNameXLaunch,
+		Filtered:    false,
+		URL:         e.URL,
+		Description: e.Description,
+	}
+}
+
+func (e *CreatedEvent) IsCreated() bool {
 	return true
 }
 

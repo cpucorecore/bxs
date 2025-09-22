@@ -1,5 +1,6 @@
 {
     "log": {
+        "level": "info",
         "async": false,
         "async_buffer_size_by_byte": 1000000,
         "async_flush_interval_by_second": 1

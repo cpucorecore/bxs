@@ -9,6 +9,7 @@ type BlockInfo struct {
 	Timestamp        uint64
 	NativeTokenPrice string
 	Txs              []*orm.Tx
+	Actions          []*orm.Action
 	NewTokens        []*orm.Token
 	NewPairs         []*orm.Pair
 	PoolUpdates      []*PoolUpdate

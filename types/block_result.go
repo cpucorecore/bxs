@@ -12,8 +12,6 @@ type BlockResult struct {
 	Timestamp        uint64
 	BlockTime        time.Time
 	NativeTokenPrice decimal.Decimal
-	NewPairs         map[common.Address]*Pair
-	NewTokens        map[common.Address]*Token
 	TxResults        []*TxResult
 }
 
@@ -23,24 +21,12 @@ func NewBlockResult(height, Timestamp uint64, nativeTokenPrice decimal.Decimal) 
 		Timestamp:        Timestamp,
 		BlockTime:        time.Unix(int64(Timestamp), 0),
 		NativeTokenPrice: nativeTokenPrice,
-		NewPairs:         make(map[common.Address]*Pair),
-		NewTokens:        make(map[common.Address]*Token),
-		TxResults:        make([]*TxResult, 0, 200),
+		TxResults:        make([]*TxResult, 0, 300),
 	}
 }
 
 func (br *BlockResult) AddTxResult(txResult *TxResult) {
 	br.TxResults = append(br.TxResults, txResult)
-}
-
-func (br *BlockResult) getAllEvents() []Event {
-	events := make([]Event, 0, 500)
-	for _, txResult := range br.TxResults {
-		for _, txPairEvent := range txResult.PairAddress2TxPairEvent {
-			events = append(events, txPairEvent.XLaunch...)
-		}
-	}
-	return events
 }
 
 func mergePoolUpdates(poolUpdates []*PoolUpdate) []*PoolUpdate {
@@ -63,41 +49,35 @@ func mergePoolUpdates(poolUpdates []*PoolUpdate) []*PoolUpdate {
 }
 
 func (br *BlockResult) GetKafkaMessage() *BlockInfo {
-	events := br.getAllEvents()
+	poolUpdates := make([]*PoolUpdate, 0, len(br.TxResults))
+	txs := make([]*orm.Tx, 0, len(br.TxResults))
+	actions := make([]*orm.Action, 0, len(br.TxResults))
+	ormPairs := make([]*orm.Pair, 0, len(br.TxResults))
+	ormTokens := make([]*orm.Token, 0, len(br.TxResults))
 
-	txs := make([]*orm.Tx, 0, len(events))
-	newPairs := make([]*Pair, 0, 10)
-	poolUpdates := make([]*PoolUpdate, 0, 40)
-	for _, event := range events {
-		if event.IsCreatePair() {
-			newPairs = append(newPairs, event.GetPair())
-			continue
+	for _, txResult := range br.TxResults {
+		for _, event := range txResult.Events {
+			if event.CanGetPoolUpdate() {
+				poolUpdates = append(poolUpdates, event.GetPoolUpdate())
+			}
+
+			if event.CanGetTx() {
+				txs = append(txs, event.GetTx(br.NativeTokenPrice))
+			}
+
+			if event.IsMigrated() {
+				actions = append(actions, event.GetAction())
+			}
 		}
 
-		if event.CanGetTx() {
-			txs = append(txs, event.GetTx(br.NativeTokenPrice))
+		for _, pair := range txResult.Pairs {
+			ormPairs = append(ormPairs, pair.GetOrmPair())
 		}
 
-		if event.CanGetPoolUpdate() {
-			poolUpdates = append(poolUpdates, event.GetPoolUpdate())
+		for _, token := range txResult.Tokens {
+			ormTokens = append(ormTokens, token.GetOrmToken())
 		}
 	}
-
-	for _, pair := range newPairs {
-		br.NewPairs[pair.Address] = pair
-	}
-
-	ormTokens := make([]*orm.Token, 0, len(br.NewTokens))
-	for _, token := range br.NewTokens {
-		ormTokens = append(ormTokens, token.GetOrmToken())
-	}
-
-	ormPairs := make([]*orm.Pair, 0, len(newPairs))
-	for _, pair := range br.NewPairs {
-		ormPairs = append(ormPairs, pair.GetOrmPair())
-	}
-
-	poolUpdatesMerged := mergePoolUpdates(poolUpdates)
 
 	block := &BlockInfo{
 		Height:           br.Height,
@@ -106,7 +86,7 @@ func (br *BlockResult) GetKafkaMessage() *BlockInfo {
 		Txs:              txs,
 		NewTokens:        ormTokens,
 		NewPairs:         ormPairs,
-		PoolUpdates:      poolUpdatesMerged,
+		PoolUpdates:      mergePoolUpdates(poolUpdates),
 	}
 
 	return block

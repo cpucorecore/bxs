@@ -27,7 +27,7 @@ type BlockParser interface {
 type blockParser struct {
 	inputQueue   chan *types.ParseBlockContext
 	workPool     *ants.Pool
-	cache        cache.BlockCache
+	cache        cache.Cache
 	sequencer    sequencer.Sequencer
 	outputQueue  chan *types.ParseBlockContext
 	priceService service.PriceService
@@ -39,7 +39,7 @@ type blockParser struct {
 }
 
 func NewBlockParser(
-	cache cache.BlockCache,
+	cache cache.Cache,
 	sequencer sequencer.Sequencer,
 	priceService service.PriceService,
 	pairService service.PairService,
@@ -124,28 +124,14 @@ func (p *blockParser) waitForNativeTokenPrice(blockNumber *big.Int, blockTimesta
 	}
 }
 
-func collectNewPairAndTokens(br *types.BlockResult, pairWrap *types.PairWrap) {
-	if pairWrap.NewPair {
-		br.NewPairs[pairWrap.Pair.Address] = pairWrap.Pair
-	}
-
-	if pairWrap.NewToken0 {
-		token0 := pairWrap.Pair.Token0
-		br.NewTokens[token0.Address] = token0
-	}
-
-	if pairWrap.NewToken1 {
-		token1 := pairWrap.Pair.Token1
-		br.NewTokens[token1.Address] = token1
-	}
-}
-
 type TxResultAndPairWrap struct {
 	TxResult  *types.TxResult
 	PairWraps []*types.PairWrap
+	Pairs     []*types.Pair
+	Tokens    []*types.Token
 }
 
-func (p *blockParser) parseTxReceipt(pbc *types.ParseBlockContext, txReceipt *ethtypes.Receipt) *TxResultAndPairWrap {
+func (p *blockParser) parseTxReceipt(pbc *types.ParseBlockContext, txReceipt *ethtypes.Receipt) *types.TxResult {
 	txSender, err := pbc.GetTxSender(txReceipt.TransactionIndex)
 	if err != nil {
 		log.Logger.Fatal("Err: get tx sender err",
@@ -155,8 +141,9 @@ func (p *blockParser) parseTxReceipt(pbc *types.ParseBlockContext, txReceipt *et
 		)
 	}
 
-	tr := types.NewTxResult(txSender)
-	pairWraps := make([]*types.PairWrap, 0, len(txReceipt.Logs))
+	r := types.NewTxResult(txSender, pbc.HeightTime.Time)
+	pairs := make([]*types.Pair, 0, 2)
+	tokens := make([]*types.Token, 0, 2)
 	for _, ethLog := range txReceipt.Logs {
 		if len(ethLog.Topics) == 0 {
 			continue
@@ -167,21 +154,41 @@ func (p *blockParser) parseTxReceipt(pbc *types.ParseBlockContext, txReceipt *et
 			continue
 		}
 
-		pairWrap := p.getPairByEvent(event)
-		if pairWrap.Pair.Filtered {
+		if event.IsCreated() {
+			pair := event.GetPair()
+			token0 := event.GetToken0()
+			p.cache.SetPair(pair)
+			p.cache.SetToken(token0)
+			pairs = append(pairs, pair)
+			tokens = append(tokens, token0)
 			continue
+		} else {
+			pairAddr := event.GetPairAddress()
+			pair, ok := p.cache.GetPair(pairAddr)
+			if !ok {
+				log.Logger.Sugar().Warnf("get Pool %s err", pairAddr)
+				pw := p.pairService.GetPair(pairAddr)
+				pair = pw.Pair
+				if pair == nil {
+					log.Logger.Sugar().Fatalf("get pair %s fail", pairAddr)
+				}
+				pairs = append(pairs, pair)
+				tokens = append(tokens, &types.Token{
+					Address:  pair.Token0.Address,
+					Symbol:   pair.Token0.Symbol,
+					Decimals: pair.Token0.Decimals,
+					Program:  types.ProtocolNameXLaunch,
+				})
+			}
+			event.SetPair(pair)
 		}
 
-		pairWraps = append(pairWraps, pairWrap)
-		event.SetPair(pairWrap.Pair)
-		event.SetBlockTime(pbc.HeightTime.Time)
-		tr.AddEvent(event)
+		r.SetPairs(pairs)
+		r.SetTokens(tokens)
+		r.AddEvent(event)
 	}
 
-	return &TxResultAndPairWrap{
-		TxResult:  tr,
-		PairWraps: pairWraps,
-	}
+	return r
 }
 
 func (p *blockParser) parseBlock(pbc *types.ParseBlockContext) {
@@ -190,31 +197,11 @@ func (p *blockParser) parseBlock(pbc *types.ParseBlockContext) {
 	now := time.Now()
 	br := types.NewBlockResult(pbc.HeightTime.Height, pbc.HeightTime.Timestamp, pbc.NativeTokenPrice)
 
-	wg := &sync.WaitGroup{}
-	results := make([]*TxResultAndPairWrap, len(pbc.BlockReceipts))
-	for i, txReceipt := range pbc.BlockReceipts {
+	for _, txReceipt := range pbc.BlockReceipts {
 		if txReceipt.Status != 1 {
 			continue
 		}
-
-		wg.Add(1)
-		p.parseTxPool.Submit(func() {
-			defer wg.Done()
-			result := p.parseTxReceipt(pbc, txReceipt)
-			results[i] = result
-		})
-	}
-	wg.Wait()
-
-	for _, result := range results {
-		if result == nil {
-			continue
-		}
-
-		for _, pairWrap := range result.PairWraps {
-			collectNewPairAndTokens(br, pairWrap)
-		}
-		br.AddTxResult(result.TxResult)
+		br.AddTxResult(p.parseTxReceipt(pbc, txReceipt))
 	}
 
 	duration := time.Since(now)
@@ -223,25 +210,6 @@ func (p *blockParser) parseBlock(pbc *types.ParseBlockContext) {
 
 	pbc.BlockResult = br
 	p.sequencer.CommitWithSequence(pbc, p)
-}
-
-func (p *blockParser) getPairByEvent(event types.Event) *types.PairWrap {
-	if event.CanGetPair() {
-		pair := event.GetPair()
-		if pair.Filtered {
-			p.pairService.SetPair(pair)
-			return &types.PairWrap{
-				Pair:      pair,
-				NewPair:   false,
-				NewToken0: false,
-				NewToken1: false,
-			}
-		}
-
-		return p.pairService.GetPairTokens(pair)
-	}
-
-	return p.pairService.GetPair(event.GetPairAddress())
 }
 
 func (p *blockParser) commitBlockResult(blockResult *types.BlockResult) {
@@ -261,6 +229,10 @@ func (p *blockParser) commitBlockResult(blockResult *types.BlockResult) {
 	err = p.dbService.AddTxs(blockInfo.Txs)
 	if err != nil {
 		log.Logger.Fatal("add txs err", zap.Any("height", blockInfo.Height), zap.Error(err))
+	}
+	err = p.dbService.AddActions(blockInfo.Actions)
+	if err != nil {
+		log.Logger.Fatal("add actions err", zap.Any("height", blockInfo.Height), zap.Error(err))
 	}
 
 	duration := time.Since(now)

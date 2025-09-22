@@ -21,24 +21,16 @@ type EventCommon struct {
 
 var _ Event = &EventCommon{}
 
-func (e *EventCommon) CanGetPair() bool {
-	return false
+func (e *EventCommon) GetPairAddress() common.Address {
+	return e.ContractAddress
 }
 
 func (e *EventCommon) GetPair() *Pair {
 	return nil
 }
 
-func (e *EventCommon) GetPairAddress() common.Address {
-	return e.Pair.Address
-}
-
 func (e *EventCommon) SetPair(pair *Pair) {
 	e.Pair = pair
-}
-
-func (e *EventCommon) CanGetToken0() bool {
-	return false
 }
 
 func (e *EventCommon) GetToken0() *Token {
@@ -61,7 +53,7 @@ func (e *EventCommon) GetPoolUpdate() *PoolUpdate {
 	return nil
 }
 
-func (e *EventCommon) IsCreatePair() bool {
+func (e *EventCommon) IsCreated() bool {
 	return false
 }
 
@@ -75,6 +67,10 @@ func (e *EventCommon) SetBlockTime(blockTime time.Time) {
 
 func (e *EventCommon) IsMigrated() bool {
 	return false
+}
+
+func (e *EventCommon) GetAction() *orm.Action {
+	return nil
 }
 
 func EventCommonFromEthLog(ethLog *ethtypes.Log) *EventCommon {

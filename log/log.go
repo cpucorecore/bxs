@@ -1,6 +1,7 @@
 package log
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -37,10 +38,15 @@ func InitLogger() {
 	encoderConfig := zap.NewProductionEncoderConfig()
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 
+	logLevel, err := zapcore.ParseLevel(config.G.Log.Level)
+	if err != nil {
+		panic(fmt.Sprintf("log level error: %v, level:[%s]", err, config.G.Log.Level))
+	}
+
 	core := zapcore.NewCore(
 		zapcore.NewJSONEncoder(encoderConfig),
 		writeSyncer,
-		zapcore.DebugLevel,
+		logLevel,
 	)
 
 	Logger = zap.New(core)

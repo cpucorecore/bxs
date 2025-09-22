@@ -48,18 +48,31 @@ func (e *BuyEvent) CanGetPoolUpdate() bool {
 }
 
 func (e *BuyEvent) GetPoolUpdate() *types.PoolUpdate {
-	a0, a1 := ParseAmountsByPair(e.TokensSold, e.NativeTokenRaised, e.Pair)
-	return &types.PoolUpdate{
+	u := &types.PoolUpdate{
 		Program:       types.ProtocolNameXLaunch,
 		LogIndex:      e.EventCommon.LogIndex,
 		Address:       e.EventCommon.Pair.Address,
 		Token0Address: e.EventCommon.Pair.Token0Core.Address,
 		Token1Address: e.EventCommon.Pair.Token1Core.Address,
-		Token0Amount:  a0,
-		Token1Amount:  a1,
 	}
+	u.Token0Amount, u.Token1Amount = ParseAmountsByPair(e.TokensSold, e.NativeTokenRaised, e.Pair)
+	return u
 }
 
 func (e *BuyEvent) IsMigrated() bool {
 	return e.Migrated
+}
+
+func (e *BuyEvent) GetAction() *orm.Action {
+	action := &orm.Action{
+		Maker:   e.Buyer.String(),
+		Token:   e.Pair.Token0Core.Address.String(),
+		Action:  "on-uniswap",
+		TxHash:  e.TxHash.String(),
+		Creator: e.Buyer.String(),
+		Block:   e.BlockNumber,
+		BlockAt: e.BlockTime,
+	}
+	action.Token0Amount, action.Token1Amount = ParseAmountsByPair(e.TokenAmount, e.NativeTokenAmount, e.Pair)
+	return action
 }

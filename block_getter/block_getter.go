@@ -160,14 +160,14 @@ func (bg *blockGetter) Start() {
 				bg.workPool.Submit(func() {
 					defer wg.Done()
 
-					log.Logger.Info("get block start", zap.Uint64("block_number", blockNumber))
+					log.Logger.Debug("get block start", zap.Uint64("block_number", blockNumber))
 					bw, err := bg.getBlockWithRetry(blockNumber)
 					if err != nil {
 						log.Logger.Error("get block err", zap.Uint64("blockNumber", blockNumber), zap.Error(err))
 						return
 					}
 
-					log.Logger.Info("get block success", zap.Uint64("blockNumber", blockNumber))
+					log.Logger.Debug("get block success", zap.Uint64("blockNumber", blockNumber))
 					metrics.BlockQueueSize.Set(float64(len(bg.outputBuffer)))
 					bg.blockSequencer.CommitWithSequence(bw, bg)
 				})
@@ -250,7 +250,7 @@ func (bg *blockGetter) startQueryNewHead() {
 				continue
 			}
 
-			log.Logger.Info("New block", zap.Uint64("height", bn))
+			log.Logger.Debug("New block", zap.Uint64("height", bn))
 			bg.setHeaderHeight(bn)
 			metrics.NewestHeight.Set(float64(bn))
 		}

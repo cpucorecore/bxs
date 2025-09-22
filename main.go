@@ -27,13 +27,14 @@ import (
 
 func createDBService() service.DBService {
 	var (
-		txDb            *gorm.DB
-		txDbErr         error
-		tokenPairDb     *gorm.DB
-		tokenPairDbErr  error
-		tokenRepository *repository.TokenRepository
-		pairRepository  *repository.PairRepository
-		txRepository    *repository.TxRepository
+		txDb             *gorm.DB
+		txDbErr          error
+		tokenPairDb      *gorm.DB
+		tokenPairDbErr   error
+		tokenRepository  *repository.TokenRepository
+		pairRepository   *repository.PairRepository
+		txRepository     *repository.TxRepository
+		actionRepository *repository.ActionRepository
 	)
 
 	if config.G.TxDatabase.Enabled {
@@ -43,6 +44,7 @@ func createDBService() service.DBService {
 		}
 
 		txRepository = repository.NewTxRepository(txDb)
+		actionRepository = repository.NewActionRepository(txDb)
 	}
 
 	if config.G.TokenPairDatabase.Enabled {
@@ -55,7 +57,7 @@ func createDBService() service.DBService {
 		pairRepository = repository.NewPairRepository(tokenPairDb)
 	}
 
-	return service.NewDBService(tokenRepository, pairRepository, txRepository)
+	return service.NewDBService(tokenRepository, pairRepository, txRepository, actionRepository)
 }
 
 func main() {
@@ -79,6 +81,7 @@ func main() {
 		log.Logger.Fatal("load config file err", zap.Error(loadConfigErr))
 	}
 
+	log.InitLogger()
 	metrics.Init(config.G.MetricsPort)
 	types.InitChainConfig()
 

@@ -8,11 +8,9 @@ import (
 )
 
 type Event interface {
-	CanGetPair() bool
-	GetPair() *Pair
 	GetPairAddress() common.Address
+	GetPair() *Pair
 	SetPair(pair *Pair)
-	CanGetToken0() bool
 	GetToken0() *Token
 	SetMaker(maker common.Address)
 	SetBlockTime(blockTime time.Time)
@@ -23,6 +21,7 @@ type Event interface {
 	CanGetPoolUpdate() bool
 	GetPoolUpdate() *PoolUpdate
 
-	IsCreatePair() bool
+	IsCreated() bool
 	IsMigrated() bool
+	GetAction() *orm.Action
 }
