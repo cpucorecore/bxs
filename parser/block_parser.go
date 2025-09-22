@@ -237,7 +237,7 @@ func (p *blockParser) commitBlockResult(blockResult *types.BlockResult) {
 
 	duration := time.Since(now)
 	metrics.DbOperationDurationMs.Observe(float64(duration.Milliseconds()))
-	log.Logger.Sugar().Infof("block %d native token price %s", blockInfo.Height, blockInfo.NativeTokenPrice)
+	log.Logger.Sugar().Debugf("block %d native token price %s", blockInfo.Height, blockInfo.NativeTokenPrice)
 	if blockInfo.CatchInfo() {
 		log.Logger.Info("db operation duration",
 			zap.Uint64("block", blockResult.Height),
