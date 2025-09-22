@@ -241,7 +241,7 @@ func (p *blockParser) getPairByEvent(event types.Event) *types.PairWrap {
 		return p.pairService.GetPairTokens(pair)
 	}
 
-	return p.pairService.GetPair(event.GetPairAddress(), nil)
+	return p.pairService.GetPair(event.GetPairAddress())
 }
 
 func (p *blockParser) commitBlockResult(blockResult *types.BlockResult) {

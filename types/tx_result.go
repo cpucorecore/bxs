@@ -5,12 +5,7 @@ import (
 )
 
 type TxPairEvent struct {
-	UniswapV2 []Event
-	UniswapV3 []Event
-	PancakeV2 []Event
-	PancakeV3 []Event
-	Aerodrome []Event
-	XLaunch   []Event
+	XLaunch []Event
 }
 
 func (tpe *TxPairEvent) AddEvent(event Event) {
@@ -18,15 +13,6 @@ func (tpe *TxPairEvent) AddEvent(event Event) {
 		tpe.XLaunch = make([]Event, 0, 10)
 	}
 	tpe.XLaunch = append(tpe.XLaunch, event)
-}
-
-func (tpe *TxPairEvent) linkEventByProtocol(events []Event) {
-	pairCreatedEvents := make([]Event, 0, 10)
-	for _, event := range events {
-		if event.IsCreatePair() {
-			pairCreatedEvents = append(pairCreatedEvents, event)
-		}
-	}
 }
 
 type TxResult struct {

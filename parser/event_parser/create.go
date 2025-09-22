@@ -4,14 +4,19 @@ import (
 	"bxs/abi/xlaunch"
 	"bxs/parser/event_parser/event"
 	"bxs/types"
+	"errors"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"time"
 )
 
+var (
+	ErrWrongFactoryAddress = errors.New("wrong factory address")
+)
+
 type CreatedEventParser struct {
-	FactoryEventParser
+	TopicUnpacker
 }
 
 func (o *CreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
@@ -23,7 +28,7 @@ func (o *CreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
 		return nil, ErrWrongFactoryAddress
 	}
 
-	input, err := o.LogUnpacker.Unpack(ethLog)
+	input, err := o.unpacker.Unpack(ethLog)
 	if err != nil {
 		pair.Filtered = true
 		pair.FilterCode = types.FilterCodeUnpackDataErr
@@ -55,7 +60,7 @@ func (o *CreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
 
 	pair.FilterByToken0AndToken1()
 
-	createdEvent.EventCommon.Pair.Token0 = &types.Token{
+	pair.Token0 = &types.Token{
 		Address:     createdEvent.TokenAddress,
 		Creator:     createdEvent.Creator,
 		Name:        createdEvent.Name,

@@ -3,7 +3,6 @@ package service
 import (
 	"bxs/abi/bep20"
 	uniswapv2 "bxs/abi/uniswap/v2"
-	uniswapv3 "bxs/abi/uniswap/v3"
 	"bxs/abi/xlaunch"
 	"encoding/hex"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -50,10 +49,6 @@ var (
 		{
 			Abi:   uniswapv2.PairAbi,
 			Names: []string{"token0", "token1"},
-		},
-		{
-			Abi:   uniswapv3.PoolAbi,
-			Names: []string{"fee"},
 		},
 		{
 			Abi:   xlaunch.PairAbi,

@@ -2,7 +2,6 @@ package service
 
 import (
 	uniswapv2 "bxs/abi/uniswap/v2"
-	uniswapv3 "bxs/abi/uniswap/v3"
 	"bxs/abi/xlaunch"
 	"bxs/config"
 	"bxs/metrics"
@@ -227,42 +226,6 @@ func (c *ContractCaller) CallGetLaunchByAddress(factoryAddress, tokenAddress *co
 }
 
 /*
-CallFee
-for uniswap/pancake v3
-*/
-func (c *ContractCaller) CallFee(address *common.Address) (*big.Int, error) {
-	return c.queryBigInt(address, "fee")
-}
-
-/*
-CallGetPool
-for uniswap/pancake v3
-*/
-func (c *ContractCaller) CallGetPool(factoryAddress, token0Address, token1Address *common.Address, fee *big.Int) (common.Address, error) {
-	req := BuildCallContractReqDynamic(nil, factoryAddress, uniswapv3.FactoryAbi, "getPool", token0Address, token1Address, fee)
-
-	bytes, err := c.CallContract(req)
-	if err != nil {
-		return types.ZeroAddress, err
-	}
-
-	if len(bytes) == 0 {
-		return types.ZeroAddress, ErrOutputEmpty
-	}
-
-	values, unpackErr := UniswapV3FactoryUnpacker.Unpack("getPool", bytes, 1)
-	if unpackErr != nil {
-		return types.ZeroAddress, unpackErr
-	}
-
-	if len(values) != 1 {
-		return types.ZeroAddress, ErrWrongOutputLength
-	}
-
-	return ParseAddress(values[0])
-}
-
-/*
 callGetReserves
 for uniswap/pancake v2
 */
@@ -288,25 +251,6 @@ func (c *ContractCaller) callGetReserves(blockNumber *big.Int) ([]interface{}, e
 	}
 
 	return values, nil
-}
-
-func (c *ContractCaller) GetReservesByBlockNumber(blockNumber *big.Int) (*big.Int, *big.Int, error) {
-	values, err := c.callGetReserves(blockNumber)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	reserve0, ok0 := values[0].(*big.Int)
-	if !ok0 {
-		return nil, nil, ErrReserve0NotBigInt
-	}
-
-	reserve1, ok1 := values[1].(*big.Int)
-	if !ok1 {
-		return nil, nil, ErrReserve1NotBigInt
-	}
-
-	return reserve0, reserve1, nil
 }
 
 func (c *ContractCaller) GetPriceByBlockNumber(blockNumber *big.Int) (decimal.Decimal, error) {

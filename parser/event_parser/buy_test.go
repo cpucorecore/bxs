@@ -17,7 +17,7 @@ func TestBuy(t *testing.T) {
 	event, pErr := Topic2EventParser[ethLog.Topics[0]].Parse(ethLog)
 	require.NoError(t, pErr)
 
-	pairWrap := tc.PairService.GetPair(event.GetPairAddress(), nil)
+	pairWrap := tc.PairService.GetPair(event.GetPairAddress())
 	event.SetPair(pairWrap.Pair)
 
 	tx := event.GetTx(service.MockNativeTokenPrice)

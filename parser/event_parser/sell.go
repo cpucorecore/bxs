@@ -9,11 +9,11 @@ import (
 )
 
 type SellEventParser struct {
-	PoolEventParser
+	TopicUnpacker
 }
 
 func (o *SellEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
-	eventInput, err := o.ethLogUnpacker.Unpack(ethLog)
+	eventInput, err := o.unpacker.Unpack(ethLog)
 	if err != nil {
 		return nil, err
 	}

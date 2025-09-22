@@ -1,17 +1,15 @@
 package event_parser
 
 import (
-	"bxs/abi"
 	"bxs/abi/xlaunch"
 	"github.com/ethereum/go-ethereum/common"
 )
 
 var (
 	createdEventParser = &CreatedEventParser{
-		FactoryEventParser{
-			Topic:                    xlaunch.CreatedTopic0,
-			PossibleFactoryAddresses: abi.Topic2FactoryAddresses[xlaunch.CreatedTopic0],
-			LogUnpacker: EthLogUnpacker{
+		TopicUnpacker{
+			topic: xlaunch.CreatedTopic0,
+			unpacker: EthLogUnpacker{
 				AbiEvent:      xlaunch.CreatedEvent,
 				TopicLen:      4,
 				DataUnpackLen: 6,
@@ -20,10 +18,9 @@ var (
 	}
 
 	buyEventParser = &BuyEventParser{
-		PoolEventParser{
-			Topic:               xlaunch.BuyTopic0,
-			PossibleProtocolIds: abi.Topic2ProtocolIds[xlaunch.BuyTopic0],
-			ethLogUnpacker: EthLogUnpacker{
+		TopicUnpacker{
+			topic: xlaunch.BuyTopic0,
+			unpacker: EthLogUnpacker{
 				AbiEvent:      xlaunch.BuyEvent,
 				TopicLen:      2,
 				DataUnpackLen: 6,
@@ -32,10 +29,9 @@ var (
 	}
 
 	sellEventParser = &SellEventParser{
-		PoolEventParser{
-			Topic:               xlaunch.SellTopic0,
-			PossibleProtocolIds: abi.Topic2ProtocolIds[xlaunch.SellTopic0],
-			ethLogUnpacker: EthLogUnpacker{
+		TopicUnpacker{
+			topic: xlaunch.SellTopic0,
+			unpacker: EthLogUnpacker{
 				AbiEvent:      xlaunch.SellEvent,
 				TopicLen:      2,
 				DataUnpackLen: 5,

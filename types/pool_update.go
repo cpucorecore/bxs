@@ -40,10 +40,3 @@ func (u *PoolUpdate) Equal(tx *PoolUpdate) bool {
 	}
 	return true
 }
-
-type PoolUpdateParameter struct {
-	BlockNumber   uint64
-	PairAddress   common.Address
-	Token0Address common.Address
-	Token1Address common.Address
-}

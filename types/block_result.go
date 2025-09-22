@@ -37,11 +37,6 @@ func (br *BlockResult) getAllEvents() []Event {
 	events := make([]Event, 0, 500)
 	for _, txResult := range br.TxResults {
 		for _, txPairEvent := range txResult.PairAddress2TxPairEvent {
-			events = append(events, txPairEvent.UniswapV2...)
-			events = append(events, txPairEvent.UniswapV3...)
-			events = append(events, txPairEvent.PancakeV2...)
-			events = append(events, txPairEvent.PancakeV3...)
-			events = append(events, txPairEvent.Aerodrome...)
 			events = append(events, txPairEvent.XLaunch...)
 		}
 	}

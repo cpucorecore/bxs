@@ -19,7 +19,7 @@ import (
 type PairService interface {
 	SetPair(pair *types.Pair)
 	GetPairTokens(pair *types.Pair) *types.PairWrap
-	GetPair(pairAddress common.Address, possibleProtocolIds []int) *types.PairWrap
+	GetPair(pairAddress common.Address) *types.PairWrap
 }
 
 type pairService struct {
@@ -169,7 +169,7 @@ func (s *pairService) GetPairTokens(pair *types.Pair) *types.PairWrap {
 	return doResult.(*types.PairWrap)
 }
 
-func (s *pairService) getPair(pairAddress common.Address, possibleProtocolIds []int) *types.PairWrap {
+func (s *pairService) getPair(pairAddress common.Address) *types.PairWrap {
 	doResult, _, _ := s.group.Do(pairAddress.String()+"gp", func() (interface{}, error) {
 		pair := s.doGetPair(pairAddress)
 		if pair.Filtered {
@@ -198,7 +198,7 @@ func (s *pairService) getPair(pairAddress common.Address, possibleProtocolIds []
 	return doResult.(*types.PairWrap)
 }
 
-func (s *pairService) GetPair(pairAddress common.Address, possibleProtocolIds []int) *types.PairWrap {
+func (s *pairService) GetPair(pairAddress common.Address) *types.PairWrap {
 	cachePair, ok := s.cache.GetPair(pairAddress)
 	if ok {
 		return &types.PairWrap{
@@ -206,7 +206,7 @@ func (s *pairService) GetPair(pairAddress common.Address, possibleProtocolIds []
 		}
 	}
 
-	return s.getPair(pairAddress, possibleProtocolIds)
+	return s.getPair(pairAddress)
 }
 
 func (s *pairService) doGetPair(pairAddress common.Address) *types.Pair {
@@ -238,34 +238,12 @@ func (s *pairService) doGetPair(pairAddress common.Address) *types.Pair {
 	return pair
 }
 
-func (s *pairService) verifyPairV2(pairFactoryAddress common.Address, pair *types.Pair) bool {
-	pairAddressQueried, err := s.contractCaller.CallGetPair(&pairFactoryAddress, &pair.Token0Core.Address, &pair.Token1Core.Address)
-	if err != nil {
-		return false
-	}
-	return types.IsSameAddress(pairAddressQueried, pair.Address)
-}
-
 func (s *pairService) verifyXLaunch(pair *types.Pair) bool {
 	verified, err := s.contractCaller.CallGetLaunchByAddress(&xlaunch.FactoryAddress, &pair.Address)
 	if err != nil {
 		return false
 	}
 	return verified
-}
-
-func (s *pairService) verifyPairV3(pairFactoryAddress common.Address, pair *types.Pair) bool {
-	fee, callFeeErr := s.contractCaller.CallFee(&pair.Address)
-	if callFeeErr != nil {
-		return false
-	}
-
-	pairAddressQueried, err := s.contractCaller.CallGetPool(&pairFactoryAddress, &pair.Token0Core.Address, &pair.Token1Core.Address, fee)
-	if err != nil {
-		return false
-	}
-
-	return types.IsSameAddress(pairAddressQueried, pair.Address)
 }
 
 func (s *pairService) verifyPair(pair *types.Pair) bool {

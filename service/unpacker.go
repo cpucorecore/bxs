@@ -4,7 +4,6 @@ import (
 	"bxs/abi/bep20"
 	"bxs/abi/ds_token"
 	uniswapv2 "bxs/abi/uniswap/v2"
-	uniswapv3 "bxs/abi/uniswap/v3"
 	"bxs/abi/xlaunch"
 	"bxs/types"
 	"errors"
@@ -58,16 +57,8 @@ var (
 		uniswapv2.PairAbi,
 	})
 
-	UniswapV3PoolUnpacker = NewUnpacker([]*abi.ABI{
-		uniswapv3.PoolAbi,
-	})
-
 	UniswapV2FactoryUnpacker = NewUnpacker([]*abi.ABI{
 		uniswapv2.FactoryAbi,
-	})
-
-	UniswapV3FactoryUnpacker = NewUnpacker([]*abi.ABI{
-		uniswapv3.FactoryAbi,
 	})
 
 	XLaunchUnpacker = NewUnpacker([]*abi.ABI{
@@ -86,7 +77,6 @@ var (
 		"token0":      UniswapV2PairUnpacker,
 		"token1":      UniswapV2PairUnpacker,
 		"getReserves": UniswapV2PairUnpacker,
-		"fee":         UniswapV3PoolUnpacker,
 		"token":       XLaunchUnpacker,
 	}
 )
