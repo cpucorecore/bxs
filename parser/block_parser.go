@@ -265,13 +265,15 @@ func (p *blockParser) commitBlockResult(blockResult *types.BlockResult) {
 
 	duration := time.Since(now)
 	metrics.DbOperationDurationMs.Observe(float64(duration.Milliseconds()))
-	log.Logger.Info("db operation duration",
-		zap.Uint64("block", blockResult.Height),
-		zap.Float64("duration", duration.Seconds()),
-		zap.String("price", blockInfo.NativeTokenPrice),
-		zap.Int("new tokens", len(blockInfo.NewTokens)),
-		zap.Int("new pairs", len(blockInfo.NewPairs)),
-		zap.Int("txs", len(blockInfo.Txs)))
+	log.Logger.Sugar().Infof("block %d native token price %s", blockInfo.Height, blockInfo.NativeTokenPrice)
+	if blockInfo.CatchInfo() {
+		log.Logger.Info("db operation duration",
+			zap.Uint64("block", blockResult.Height),
+			zap.Float64("duration", duration.Seconds()),
+			zap.Int("new tokens", len(blockInfo.NewTokens)),
+			zap.Int("new pairs", len(blockInfo.NewPairs)),
+			zap.Int("txs", len(blockInfo.Txs)))
+	}
 
 	err = p.kafkaSender.Send(blockInfo)
 	if err != nil {

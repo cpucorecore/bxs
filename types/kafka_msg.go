@@ -15,6 +15,10 @@ type BlockInfo struct {
 	PoolUpdateParameters []*PoolUpdateParameter
 }
 
+func (bi *BlockInfo) CatchInfo() bool {
+	return len(bi.Txs) != 0 || len(bi.NewTokens) != 0 || len(bi.NewPairs) != 0
+}
+
 type BlockInfoOld struct {
 	BlockNumber            uint64
 	BlockAt                uint64
