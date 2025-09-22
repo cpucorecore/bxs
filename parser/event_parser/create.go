@@ -1,12 +1,13 @@
 package event_parser
 
 import (
-	"bxs/abi"
+	"bxs/abi/xlaunch"
 	"bxs/parser/event_parser/event"
 	"bxs/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
+	"time"
 )
 
 type CreatedEventParser struct {
@@ -16,8 +17,7 @@ type CreatedEventParser struct {
 func (o *CreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
 	pair := &types.Pair{}
 
-	_, ok := o.PossibleFactoryAddresses[ethLog.Address]
-	if !ok {
+	if !types.IsSameAddress(ethLog.Address, xlaunch.FactoryAddress) {
 		pair.Filtered = true
 		pair.FilterCode = types.FilterCodeWrongFactory
 		return nil, ErrWrongFactoryAddress
@@ -30,7 +30,7 @@ func (o *CreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
 		return nil, err
 	}
 
-	e := &event.CreatedEvent{
+	createdEvent := &event.CreatedEvent{
 		EventCommon:         types.EventCommonFromEthLog(ethLog),
 		PoolAddress:         common.BytesToAddress(ethLog.Topics[1].Bytes()[12:]),
 		Creator:             common.BytesToAddress(ethLog.Topics[2].Bytes()[12:]),
@@ -43,19 +43,34 @@ func (o *CreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
 		Description:         input[5].(string),
 	}
 
-	pair.Address = e.PoolAddress
+	pair.Address = createdEvent.PoolAddress
 	pair.Token0Core = &types.TokenCore{
-		Address:  e.TokenAddress,
-		Symbol:   e.Symbol,
-		Decimals: 18,
+		Address:  createdEvent.TokenAddress,
+		Symbol:   createdEvent.Symbol,
+		Decimals: types.DefaultDecimals,
 	}
 	pair.Token1Core = types.NativeTokenCore
 	pair.Block = ethLog.BlockNumber
-	pair.ProtocolId = abi.FactoryAddress2ProtocolId[ethLog.Address]
+	pair.ProtocolId = types.ProtocolIdXLaunch
 
 	pair.FilterByToken0AndToken1()
 
-	e.Pair = pair
+	createdEvent.EventCommon.Pair.Token0 = &types.Token{
+		Address:     createdEvent.TokenAddress,
+		Creator:     createdEvent.Creator,
+		Name:        createdEvent.Name,
+		Symbol:      createdEvent.Symbol,
+		Decimals:    types.DefaultDecimals,
+		BlockNumber: createdEvent.BlockNumber,
+		BlockTime:   createdEvent.BlockTime,
+		Program:     types.ProtocolNameXLaunch,
+		Filtered:    false,
+		Timestamp:   time.Now(),
+		URL:         createdEvent.URL,
+		Description: createdEvent.Description,
+	}
 
-	return e, nil
+	createdEvent.Pair = pair
+
+	return createdEvent, nil
 }

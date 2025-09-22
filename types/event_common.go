@@ -9,30 +9,17 @@ import (
 )
 
 type EventCommon struct {
-	Pair                *Pair
-	ContractAddress     common.Address
-	BlockNumber         uint64
-	BlockTime           time.Time
-	TxHash              common.Hash
-	Maker               common.Address
-	TxIndex             uint
-	LogIndex            uint
-	PossibleProtocolIds []int
+	Pair            *Pair
+	ContractAddress common.Address
+	BlockNumber     uint64
+	BlockTime       time.Time
+	TxHash          common.Hash
+	Maker           common.Address
+	TxIndex         uint
+	LogIndex        uint
 }
 
 var _ Event = &EventCommon{}
-
-func (e *EventCommon) GetProtocolId() int {
-	return e.Pair.ProtocolId
-}
-
-func (e *EventCommon) GetPossibleProtocolIds() []int {
-	return e.PossibleProtocolIds
-}
-
-func (e *EventCommon) SetPossibleProtocolIds(possibleProtocolIds []int) {
-	e.PossibleProtocolIds = possibleProtocolIds
-}
 
 func (e *EventCommon) CanGetPair() bool {
 	return false
@@ -50,11 +37,19 @@ func (e *EventCommon) SetPair(pair *Pair) {
 	e.Pair = pair
 }
 
+func (e *EventCommon) CanGetToken0() bool {
+	return false
+}
+
+func (e *EventCommon) GetToken0() *Token {
+	return nil
+}
+
 func (e *EventCommon) CanGetTx() bool {
 	return false
 }
 
-func (e *EventCommon) GetTx(bnbPrice decimal.Decimal) *orm.Tx {
+func (e *EventCommon) GetTx(nativeTokenPrice decimal.Decimal) *orm.Tx {
 	return nil
 }
 
@@ -66,27 +61,8 @@ func (e *EventCommon) GetPoolUpdate() *PoolUpdate {
 	return nil
 }
 
-func (e *EventCommon) CanGetPoolUpdateParameter() bool {
-	return false
-}
-
-func (e *EventCommon) GetPoolUpdateParameter() *PoolUpdateParameter {
-	return nil
-}
-
-func (e *EventCommon) LinkEvent(event Event) {
-}
-
 func (e *EventCommon) IsCreatePair() bool {
 	return false
-}
-
-func (e *EventCommon) IsMint() bool {
-	return false
-}
-
-func (e *EventCommon) GetMintAmount() (decimal.Decimal, decimal.Decimal) {
-	return decimal.Zero, decimal.Zero
 }
 
 func (e *EventCommon) SetMaker(maker common.Address) {
@@ -95,6 +71,10 @@ func (e *EventCommon) SetMaker(maker common.Address) {
 
 func (e *EventCommon) SetBlockTime(blockTime time.Time) {
 	e.BlockTime = blockTime
+}
+
+func (e *EventCommon) IsMigrated() bool {
+	return false
 }
 
 func EventCommonFromEthLog(ethLog *ethtypes.Log) *EventCommon {

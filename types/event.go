@@ -8,27 +8,21 @@ import (
 )
 
 type Event interface {
-	GetProtocolId() int
-	GetPossibleProtocolIds() []int
 	CanGetPair() bool
 	GetPair() *Pair
 	GetPairAddress() common.Address
 	SetPair(pair *Pair)
+	CanGetToken0() bool
+	GetToken0() *Token
 	SetMaker(maker common.Address)
 	SetBlockTime(blockTime time.Time)
 
 	CanGetTx() bool
-	GetTx(bnbPrice decimal.Decimal) *orm.Tx
+	GetTx(nativeTokenPrice decimal.Decimal) *orm.Tx
 
 	CanGetPoolUpdate() bool
 	GetPoolUpdate() *PoolUpdate
 
-	CanGetPoolUpdateParameter() bool
-	GetPoolUpdateParameter() *PoolUpdateParameter
-
-	LinkEvent(event Event)
-
 	IsCreatePair() bool
-	IsMint() bool
-	GetMintAmount() (decimal.Decimal, decimal.Decimal)
+	IsMigrated() bool
 }

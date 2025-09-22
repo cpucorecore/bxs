@@ -33,7 +33,5 @@ func (o *BuyEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
 		Address: ethLog.Address,
 	}
 
-	e.PossibleProtocolIds = o.PossibleProtocolIds
-
 	return e, nil
 }

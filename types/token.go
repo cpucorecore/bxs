@@ -23,14 +23,14 @@ var (
 	NativeToken = &Token{
 		Address:  ZeroAddress,
 		Creator:  ZeroAddress,
-		Symbol:   "BNB",
-		Decimals: 18,
+		Symbol:   NativeTokenSymbol,
+		Decimals: DefaultDecimals,
 	}
 
 	NativeTokenCore = &TokenCore{
 		Address:  ZeroAddress,
-		Symbol:   "BNB",
-		Decimals: 18,
+		Symbol:   NativeTokenSymbol,
+		Decimals: DefaultDecimals,
 	}
 )
 
@@ -73,6 +73,8 @@ type Token struct {
 	Program     string
 	Filtered    bool
 	Timestamp   time.Time
+	URL         string
+	Description string
 }
 
 func (t *Token) MarshalBinary() ([]byte, error) {

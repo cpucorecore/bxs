@@ -22,7 +22,7 @@ func (e *SellEvent) CanGetTx() bool {
 	return true
 }
 
-func (e *SellEvent) GetTx(bnbPrice decimal.Decimal) *orm.Tx {
+func (e *SellEvent) GetTx(nativeTokenPrice decimal.Decimal) *orm.Tx {
 	tx := &orm.Tx{
 		TxHash:        e.TxHash.String(),
 		Event:         types.Sell,
@@ -34,11 +34,11 @@ func (e *SellEvent) GetTx(bnbPrice decimal.Decimal) *orm.Tx {
 		BlockIndex:    e.TxIndex,
 		TxIndex:       e.LogIndex,
 		PairAddress:   e.Pair.Address.String(),
-		Program:       types.GetProtocolName(e.Pair.ProtocolId),
+		Program:       types.ProtocolNameXLaunch,
 	}
 
 	tx.Token0Amount, tx.Token1Amount = ParseAmountsByPair(e.TokenAmount, e.NativeTokenAmount, e.Pair)
-	tx.AmountUsd, tx.PriceUsd = CalcAmountAndPrice(bnbPrice, tx.Token0Amount, tx.Token1Amount, e.Pair.Token1Core.Address)
+	tx.AmountUsd, tx.PriceUsd = CalcAmountAndPrice(nativeTokenPrice, tx.Token0Amount, tx.Token1Amount, e.Pair.Token1Core.Address)
 	return tx
 }
 

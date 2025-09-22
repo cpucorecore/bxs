@@ -1,9 +1,7 @@
 package types
 
 import (
-	"bxs/log"
 	"github.com/ethereum/go-ethereum/common"
-	"go.uber.org/zap"
 )
 
 type TxPairEvent struct {
@@ -16,55 +14,19 @@ type TxPairEvent struct {
 }
 
 func (tpe *TxPairEvent) AddEvent(event Event) {
-	switch event.GetProtocolId() {
-	case ProtocolIdNewSwap:
-		if tpe.UniswapV2 == nil {
-			tpe.UniswapV2 = make([]Event, 0, 10)
-		}
-		tpe.UniswapV2 = append(tpe.UniswapV2, event)
-	case ProtocolIdUniswapV3:
-		if tpe.UniswapV3 == nil {
-			tpe.UniswapV3 = make([]Event, 0, 10)
-		}
-		tpe.UniswapV3 = append(tpe.UniswapV3, event)
-	case ProtocolIdXLaunch:
-		if tpe.XLaunch == nil {
-			tpe.XLaunch = make([]Event, 0, 10)
-		}
-		tpe.XLaunch = append(tpe.XLaunch, event)
+	if tpe.XLaunch == nil {
+		tpe.XLaunch = make([]Event, 0, 10)
 	}
-}
-
-func (tpe *TxPairEvent) LinkEvents() {
-	tpe.linkEventByProtocol(tpe.UniswapV2)
-	tpe.linkEventByProtocol(tpe.UniswapV3)
-	tpe.linkEventByProtocol(tpe.PancakeV2)
-	tpe.linkEventByProtocol(tpe.PancakeV3)
-	tpe.linkEventByProtocol(tpe.Aerodrome)
-}
-
-func LinkPairCreatedEventAndMintEvent(pairCreatedEvents, mintEvents []Event) {
-	mintEventsLen := len(mintEvents)
-	for i, pairCreatedEvent := range pairCreatedEvents {
-		if i < mintEventsLen {
-			pairCreatedEvent.LinkEvent(mintEvents[i])
-		} else {
-			log.Logger.Info("Waring: pair have no related mint event", zap.Any("pairCreatedEvent", pairCreatedEvent))
-		}
-	}
+	tpe.XLaunch = append(tpe.XLaunch, event)
 }
 
 func (tpe *TxPairEvent) linkEventByProtocol(events []Event) {
-	mintEvents := make([]Event, 0, 10)
 	pairCreatedEvents := make([]Event, 0, 10)
 	for _, event := range events {
-		if event.IsMint() {
-			mintEvents = append(mintEvents, event)
-		} else if event.IsCreatePair() {
+		if event.IsCreatePair() {
 			pairCreatedEvents = append(pairCreatedEvents, event)
 		}
 	}
-	LinkPairCreatedEventAndMintEvent(pairCreatedEvents, mintEvents)
 }
 
 type TxResult struct {
@@ -97,10 +59,4 @@ func (tr *TxResult) AddEvent(event Event) {
 	txPairEvent = &TxPairEvent{}
 	txPairEvent.AddEvent(event)
 	tr.PairAddress2TxPairEvent[pairAddress] = txPairEvent
-}
-
-func (tr *TxResult) LinkEvents() {
-	for _, pairEvent := range tr.PairAddress2TxPairEvent {
-		pairEvent.LinkEvents()
-	}
 }

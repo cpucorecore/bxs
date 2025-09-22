@@ -17,7 +17,6 @@ type CreatedEvent struct {
 	Symbol              string
 	URL                 string
 	Description         string
-	MintEvent           types.Event
 }
 
 func (e *CreatedEvent) CanGetPair() bool {
@@ -25,11 +24,16 @@ func (e *CreatedEvent) CanGetPair() bool {
 }
 
 func (e *CreatedEvent) GetPair() *types.Pair {
-	if e.MintEvent != nil {
-		e.Pair.Token0InitAmount, e.Pair.Token1InitAmount = e.MintEvent.GetMintAmount()
-	}
 	e.Pair.BlockAt = e.BlockTime
 	return e.Pair
+}
+
+func (e *CreatedEvent) CanGetToken0() bool {
+	return true
+}
+
+func (e *CreatedEvent) GetToken0() *types.Token {
+	return e.EventCommon.GetToken0()
 }
 
 func (e *CreatedEvent) IsCreatePair() bool {

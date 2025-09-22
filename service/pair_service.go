@@ -1,8 +1,6 @@
 package service
 
 import (
-	uniswapv2 "bxs/abi/uniswap/v2"
-	uniswapv3 "bxs/abi/uniswap/v3"
 	"bxs/abi/xlaunch"
 	"bxs/cache"
 	"bxs/log"
@@ -184,7 +182,7 @@ func (s *pairService) getPair(pairAddress common.Address, possibleProtocolIds []
 			}, nil
 		}
 
-		if !s.verifyPair(pair, possibleProtocolIds) {
+		if !s.verifyPair(pair) {
 			s.SetPair(pair)
 			return &types.PairWrap{
 				Pair:      pair,
@@ -248,8 +246,8 @@ func (s *pairService) verifyPairV2(pairFactoryAddress common.Address, pair *type
 	return types.IsSameAddress(pairAddressQueried, pair.Address)
 }
 
-func (s *pairService) verifyXLaunch(pairFactoryAddress common.Address, pair *types.Pair) bool {
-	verified, err := s.contractCaller.CallGetLaunchByAddress(&pairFactoryAddress, &pair.Address)
+func (s *pairService) verifyXLaunch(pair *types.Pair) bool {
+	verified, err := s.contractCaller.CallGetLaunchByAddress(&xlaunch.FactoryAddress, &pair.Address)
 	if err != nil {
 		return false
 	}
@@ -270,39 +268,18 @@ func (s *pairService) verifyPairV3(pairFactoryAddress common.Address, pair *type
 	return types.IsSameAddress(pairAddressQueried, pair.Address)
 }
 
-func (s *pairService) verifyPair(pair *types.Pair, possibleProtocolIds []int) bool {
+func (s *pairService) verifyPair(pair *types.Pair) bool {
 	now := time.Now()
 	defer func() {
 		duration := float64(time.Since(now).Milliseconds())
 		metrics.VerifyPairDurationMs.Observe(duration)
 	}()
 
-	for _, protocolId := range possibleProtocolIds {
-		switch protocolId {
-		case types.ProtocolIdNewSwap:
-			if s.verifyPairV2(uniswapv2.FactoryAddress, pair) {
-				pair.ProtocolId = protocolId
-				metrics.VerifyPairTotal.WithLabelValues("success").Inc()
-				metrics.VerifyPairOkByProtocol.WithLabelValues("uniswap_v2").Inc()
-				return true
-			}
-
-		case types.ProtocolIdUniswapV3:
-			if s.verifyPairV3(uniswapv3.FactoryAddress, pair) {
-				pair.ProtocolId = protocolId
-				metrics.VerifyPairTotal.WithLabelValues("success").Inc()
-				metrics.VerifyPairOkByProtocol.WithLabelValues("uniswap_v3").Inc()
-				return true
-			}
-
-		case types.ProtocolIdXLaunch:
-			if s.verifyXLaunch(xlaunch.FactoryAddress, pair) {
-				pair.ProtocolId = protocolId
-				metrics.VerifyPairTotal.WithLabelValues("success").Inc()
-				metrics.VerifyPairOkByProtocol.WithLabelValues("xlaunch").Inc()
-				return true
-			}
-		}
+	if s.verifyXLaunch(pair) {
+		pair.ProtocolId = types.ProtocolIdXLaunch
+		metrics.VerifyPairTotal.WithLabelValues("success").Inc()
+		metrics.VerifyPairOkByProtocol.WithLabelValues("xlaunch").Inc()
+		return true
 	}
 
 	pair.Filtered = true
