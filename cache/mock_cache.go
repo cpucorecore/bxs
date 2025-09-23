@@ -12,6 +12,16 @@ type MockCache struct {
 	memory *cache.Cache
 }
 
+func (c *MockCache) SetMigrateToken(address common.Address) {
+}
+
+func (c *MockCache) MigrateTokenExist(address common.Address) bool {
+	return false
+}
+
+func (c *MockCache) DelMigrateToken(address common.Address) {
+}
+
 func NewMockCache() Cache {
 	return &MockCache{
 		memory: cache.New(cache.NoExpiration, cache.NoExpiration),

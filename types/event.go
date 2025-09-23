@@ -24,4 +24,7 @@ type Event interface {
 	IsCreated() bool
 	IsMigrated() bool
 	GetAction() *orm.Action
+
+	IsPairCreated() bool
+	GetNonWBNBToken() common.Address
 }

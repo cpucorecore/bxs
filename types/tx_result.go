@@ -1,6 +1,7 @@
 package types
 
 import (
+	"bxs/repository/orm"
 	"github.com/ethereum/go-ethereum/common"
 	"time"
 )
@@ -17,25 +18,36 @@ func (tpe *TxPairEvent) AddEvent(event Event) {
 }
 
 type TxResult struct {
-	BlockTime time.Time
-	Maker     common.Address
-	Events    []Event
-	Pairs     []*Pair
-	Tokens    []*Token
+	BlockTime         time.Time
+	Maker             common.Address
+	SwapEvents        []Event
+	PairCreatedEvents []Event
+	PoolUpdates       []*PoolUpdate
+	Pairs             []*Pair
+	Tokens            []*Token
+	Actions           []*orm.Action
 }
 
 func NewTxResult(maker common.Address, blockTime time.Time) *TxResult {
 	return &TxResult{
-		Maker:     maker,
-		BlockTime: blockTime,
-		Events:    make([]Event, 0, 32),
+		Maker:             maker,
+		BlockTime:         blockTime,
+		SwapEvents:        make([]Event, 0, 32),
+		PairCreatedEvents: make([]Event, 0, 32),
+		PoolUpdates:       make([]*PoolUpdate, 0, 32),
 	}
 }
 
-func (r *TxResult) AddEvent(event Event) {
+func (r *TxResult) AddSwapEvent(event Event) {
 	event.SetMaker(r.Maker)
 	event.SetBlockTime(r.BlockTime)
-	r.Events = append(r.Events, event)
+	r.SwapEvents = append(r.SwapEvents, event)
+}
+
+func (r *TxResult) AddPairCreatedEvent(event Event) {
+	event.SetMaker(r.Maker)
+	event.SetBlockTime(r.BlockTime)
+	r.PairCreatedEvents = append(r.PairCreatedEvents, event)
 }
 
 func (r *TxResult) SetPairs(pairs []*Pair) {
@@ -44,4 +56,12 @@ func (r *TxResult) SetPairs(pairs []*Pair) {
 
 func (r *TxResult) SetTokens(tokens []*Token) {
 	r.Tokens = tokens
+}
+
+func (r *TxResult) SetActions(actions []*orm.Action) {
+	r.Actions = actions
+}
+
+func (r *TxResult) AddPoolUpdate(poolUpdate *PoolUpdate) {
+	r.PoolUpdates = append(r.PoolUpdates, poolUpdate)
 }

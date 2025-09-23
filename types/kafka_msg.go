@@ -16,5 +16,5 @@ type BlockInfo struct {
 }
 
 func (bi *BlockInfo) CatchInfo() bool {
-	return len(bi.Txs) != 0 || len(bi.NewTokens) != 0 || len(bi.NewPairs) != 0
+	return len(bi.Txs) != 0 || len(bi.NewTokens) != 0 || len(bi.Actions) != 0 || len(bi.NewPairs) != 0
 }

@@ -40,16 +40,16 @@ var (
 		},
 	}
 
-	pairCreatedEventParser = &CreatedEventParser{
-		TopicUnpacker{
+	pairCreatedEventParser = &PairCreatedEventParser{
+		TopicUnpacker: TopicUnpacker{
 			topic: pancakev2.PairCreatedTopic0,
 			unpacker: EthLogUnpacker{
 				AbiEvent:      pancakev2.PairCreatedEvent,
 				TopicLen:      3,
 				DataUnpackLen: 2,
 			},
-			factoryAddr: pancakev2.FactoryAddressTestnet, // TODO fixme: config
 		},
+		FactoryAddress: pancakev2.FactoryAddressTestnet,
 	}
 
 	Topic2EventParser = map[common.Hash]EventParser{

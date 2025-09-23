@@ -10,15 +10,18 @@ import (
 )
 
 const (
-	WETH_USDC_PAIR = "0x0C0c1CfB948A75595B7D70703BF50190E62a2286" // newchain contract https://explorer.newtonproject.org/address/0x0C0c1CfB948A75595B7D70703BF50190E62a2286/read-contract
-	WETH           = "0x51dA03503FBBA94B9d0D88C15690D840F02F15F4"
-	USDC           = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+	WETH_USDC_PAIR        = "0x0C0c1CfB948A75595B7D70703BF50190E62a2286" // newchain contract https://explorer.newtonproject.org/address/0x0C0c1CfB948A75595B7D70703BF50190E62a2286/read-contract
+	WETH                  = "0x51dA03503FBBA94B9d0D88C15690D840F02F15F4"
+	USDC                  = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+	WBNBAddressTestnetHex = "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd"
 )
 
 var (
 	WETHUSDCPairAddressUniswapV2 = common.HexToAddress(WETH_USDC_PAIR)
 	WETHAddress                  = common.HexToAddress(WETH)
 	USDCAddress                  = common.HexToAddress(USDC)
+	WBNBAddressTestnet           = common.HexToAddress(WBNBAddressTestnetHex)
+	WBNBAddress                  = WBNBAddressTestnet // TODO fixme: config
 
 	NativeToken = &Token{
 		Address:  ZeroAddress,
@@ -40,6 +43,10 @@ func IsSameAddress(address1, address2 common.Address) bool {
 
 func IsWETH(address common.Address) bool {
 	return IsSameAddress(address, WETHAddress)
+}
+
+func IsWBNB(address common.Address) bool {
+	return IsSameAddress(address, WBNBAddress)
 }
 
 func IsNativeToken(address common.Address) bool {

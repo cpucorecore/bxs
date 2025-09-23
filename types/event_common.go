@@ -26,7 +26,7 @@ func (e *EventCommon) GetPairAddress() common.Address {
 }
 
 func (e *EventCommon) GetPair() *Pair {
-	return nil
+	return e.Pair
 }
 
 func (e *EventCommon) SetPair(pair *Pair) {
@@ -71,6 +71,14 @@ func (e *EventCommon) IsMigrated() bool {
 
 func (e *EventCommon) GetAction() *orm.Action {
 	return nil
+}
+
+func (e *EventCommon) GetNonWBNBToken() common.Address {
+	return ZeroAddress
+}
+
+func (e *EventCommon) IsPairCreated() bool {
+	return false
 }
 
 func EventCommonFromEthLog(ethLog *ethtypes.Log) *EventCommon {

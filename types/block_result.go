@@ -56,17 +56,10 @@ func (br *BlockResult) GetKafkaMessage() *BlockInfo {
 	ormTokens := make([]*orm.Token, 0, len(br.TxResults))
 
 	for _, txResult := range br.TxResults {
-		for _, event := range txResult.Events {
-			if event.CanGetPoolUpdate() {
-				poolUpdates = append(poolUpdates, event.GetPoolUpdate())
-			}
-
+		poolUpdates = append(poolUpdates, txResult.PoolUpdates...)
+		for _, event := range txResult.SwapEvents {
 			if event.CanGetTx() {
 				txs = append(txs, event.GetTx(br.NativeTokenPrice))
-			}
-
-			if event.IsMigrated() {
-				actions = append(actions, event.GetAction())
 			}
 		}
 
@@ -77,6 +70,8 @@ func (br *BlockResult) GetKafkaMessage() *BlockInfo {
 		for _, token := range txResult.Tokens {
 			ormTokens = append(ormTokens, token.GetOrmToken())
 		}
+
+		actions = append(actions, txResult.Actions...)
 	}
 
 	block := &BlockInfo{
@@ -84,6 +79,7 @@ func (br *BlockResult) GetKafkaMessage() *BlockInfo {
 		Timestamp:        br.Timestamp,
 		NativeTokenPrice: br.NativeTokenPrice.String(),
 		Txs:              txs,
+		Actions:          actions,
 		NewTokens:        ormTokens,
 		NewPairs:         ormPairs,
 		PoolUpdates:      mergePoolUpdates(poolUpdates),

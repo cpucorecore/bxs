@@ -5,6 +5,7 @@ import (
 	"bxs/config"
 	"bxs/log"
 	"bxs/metrics"
+	"bxs/repository/orm"
 	"bxs/sequencer"
 	"bxs/service"
 	"bxs/types"
@@ -141,7 +142,7 @@ func (p *blockParser) parseTxReceipt(pbc *types.ParseBlockContext, txReceipt *et
 		)
 	}
 
-	r := types.NewTxResult(txSender, pbc.HeightTime.Time)
+	txResult := types.NewTxResult(txSender, pbc.HeightTime.Time)
 	pairs := make([]*types.Pair, 0, 2)
 	tokens := make([]*types.Token, 0, 2)
 	for _, ethLog := range txReceipt.Logs {
@@ -149,6 +150,10 @@ func (p *blockParser) parseTxReceipt(pbc *types.ParseBlockContext, txReceipt *et
 			continue
 		}
 
+		t := ethLog.Topics[0].String()
+		if t == "0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9" {
+			log.Logger.Info("parse tx receipt topic", zap.String("topic", t))
+		}
 		event, parseErr := p.topicRouter.Parse(ethLog)
 		if parseErr != nil {
 			continue
@@ -161,37 +166,61 @@ func (p *blockParser) parseTxReceipt(pbc *types.ParseBlockContext, txReceipt *et
 			p.cache.SetToken(token0)
 			pairs = append(pairs, pair)
 			tokens = append(tokens, token0)
+			txResult.AddPoolUpdate(event.GetPoolUpdate())
 			continue
-		} else if event.IsMigrated() { // xlaunch buy
-			// save tokenAddr to redis
-		} else if event.IsPairCreated() { // pancake v2 PairCreated
-		} else {
-			pairAddr := event.GetPairAddress()
-			pair, ok := p.cache.GetPair(pairAddr)
-			if !ok {
-				log.Logger.Sugar().Warnf("get Pool %s err", pairAddr)
-				pw := p.pairService.GetPair(pairAddr)
-				pair = pw.Pair
-				if pair == nil {
-					log.Logger.Sugar().Fatalf("get pair %s fail", pairAddr)
-				}
-				pairs = append(pairs, pair)
-				tokens = append(tokens, &types.Token{
-					Address:  pair.Token0.Address,
-					Symbol:   pair.Token0.Symbol,
-					Decimals: pair.Token0.Decimals,
-					Program:  types.ProtocolNameXLaunch,
-				})
-			}
-			event.SetPair(pair)
 		}
 
-		r.SetPairs(pairs)
-		r.SetTokens(tokens)
-		r.AddEvent(event)
+		if event.IsPairCreated() {
+			txResult.AddPairCreatedEvent(event)
+			continue
+		}
+
+		// swap event: buy or sell
+		pairAddr := event.GetPairAddress()
+		pair, ok := p.cache.GetPair(pairAddr)
+		if !ok {
+			log.Logger.Sugar().Warnf("get Pool %s err", pairAddr)
+			pw := p.pairService.GetPair(pairAddr)
+			pair = pw.Pair
+			if pair == nil {
+				log.Logger.Sugar().Fatalf("get pair %s fail", pairAddr)
+			}
+			pairs = append(pairs, pair)
+			tokens = append(tokens, &types.Token{
+				Address:  pair.Token0.Address,
+				Symbol:   pair.Token0.Symbol,
+				Decimals: pair.Token0.Decimals,
+				Program:  types.ProtocolNameXLaunch,
+			})
+		}
+		event.SetPair(pair)
+
+		if event.IsMigrated() {
+			p.cache.SetMigrateToken(event.GetPair().Token0Core.Address)
+		}
+
+		txResult.AddPoolUpdate(event.GetPoolUpdate())
+		txResult.AddSwapEvent(event)
 	}
 
-	return r
+	txResult.SetPairs(pairs)
+	txResult.SetTokens(tokens)
+
+	p.processTxPairCreatedEvents(txResult)
+	return txResult
+}
+
+func (p *blockParser) processTxPairCreatedEvents(txResult *types.TxResult) *types.TxResult {
+	actions := make([]*orm.Action, 0, 2)
+	for _, event := range txResult.PairCreatedEvents {
+		nonWBNBToken := event.GetNonWBNBToken()
+		if p.cache.MigrateTokenExist(nonWBNBToken) {
+			actions = append(actions, event.GetAction())
+			p.cache.DelMigrateToken(nonWBNBToken)
+		}
+	}
+	txResult.SetActions(actions)
+	return txResult
 }
 
 func (p *blockParser) parseBlock(pbc *types.ParseBlockContext) {
@@ -247,6 +276,7 @@ func (p *blockParser) commitBlockResult(blockResult *types.BlockResult) {
 			zap.Float64("duration", duration.Seconds()),
 			zap.Int("new tokens", len(blockInfo.NewTokens)),
 			zap.Int("new pairs", len(blockInfo.NewPairs)),
+			zap.Int("actions", len(blockInfo.Actions)),
 			zap.Int("txs", len(blockInfo.Txs)))
 	}
 

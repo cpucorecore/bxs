@@ -39,11 +39,18 @@ type BlockCache interface {
 	GetFinishedBlock() uint64
 }
 
+type MigrateTokenCache interface {
+	SetMigrateToken(address common.Address)
+	MigrateTokenExist(address common.Address) bool
+	DelMigrateToken(address common.Address)
+}
+
 type Cache interface {
 	PriceCache
 	TokenCache
 	PairCache
 	BlockCache
+	MigrateTokenCache
 }
 
 type twoTierCache struct {
@@ -70,6 +77,10 @@ func TokenCacheKey(address common.Address) string {
 
 func PairCacheKey(address common.Address) string {
 	return fmt.Sprintf("%d:p:%s", chain.ID, address.Hex())
+}
+
+func MigrateTokenCacheKey(address common.Address) string {
+	return fmt.Sprintf("%d:m:%s", chain.ID, address.Hex())
 }
 
 var (
@@ -202,4 +213,41 @@ func (c *twoTierCache) GetFinishedBlock() uint64 {
 		return 0
 	}
 	return v
+}
+
+func (c *twoTierCache) SetMigrateToken(address common.Address) {
+	k := MigrateTokenCacheKey(address)
+	c.memory.Set(k, true, cache.DefaultExpiration)
+	err := c.redis.Set(c.ctx, k, true, 0).Err()
+	if err != nil {
+		log.Logger.Error("save migrate token failed", zap.Error(err))
+	}
+}
+
+func (c *twoTierCache) MigrateTokenExist(address common.Address) bool {
+	k := MigrateTokenCacheKey(address)
+	_, ok := c.memory.Get(k)
+	if ok {
+		return true
+	}
+
+	_, err := c.redis.Get(c.ctx, k).Bool()
+	if err != nil {
+		if !errors.Is(err, redis.Nil) {
+			log.Logger.Error("redis get migrate token err", zap.String("k", k), zap.Error(err))
+		}
+		return false
+	}
+
+	c.memory.Set(k, true, 0)
+	return true
+}
+
+func (c *twoTierCache) DelMigrateToken(address common.Address) {
+	k := MigrateTokenCacheKey(address)
+	c.memory.Delete(k)
+	err := c.redis.Del(c.ctx, k).Err()
+	if err != nil {
+		log.Logger.Error("redis del migrate token err", zap.Error(err))
+	}
 }
