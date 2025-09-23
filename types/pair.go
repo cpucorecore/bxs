@@ -1,7 +1,7 @@
 package types
 
 import (
-	"bxs/chain"
+	"bxs/chain_params"
 	"bxs/repository/orm"
 	"bxs/util"
 	"encoding/json"
@@ -215,7 +215,7 @@ func (p *Pair) GetOrmPair() *orm.Pair {
 		Token1:   p.Token1Core.Address.String(),
 		Reserve0: p.Token0InitAmount.Mul(decimal.New(1, int32(p.Token0Core.Decimals))), // for db type is numeric(78)
 		Reserve1: p.Token1InitAmount.Mul(decimal.New(1, int32(p.Token1Core.Decimals))), // for db type is numeric(78)
-		ChainId:  chain.ID,
+		ChainId:  chain_params.G.ChainID,
 		Block:    p.Block,
 		BlockAt:  p.BlockAt,
 		Program:  ProtocolNameXLaunch,

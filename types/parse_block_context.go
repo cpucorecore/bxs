@@ -1,13 +1,11 @@
 package types
 
 import (
-	bscparams "bxs/chain/v1_5_17"
-	"bxs/config"
+	"bxs/chain_params"
 	"bxs/log"
 	"errors"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/params"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"math/big"
@@ -47,20 +45,6 @@ type ParseBlockContext struct {
 	BlockResult *BlockResult
 }
 
-var (
-	chainConfig *params.ChainConfig
-)
-
-func InitChainConfig() {
-	if chainConfig == nil {
-		if config.G.TestNet {
-			chainConfig = bscparams.ChapelChainConfig
-		} else {
-			chainConfig = params.MainnetChainConfig
-		}
-	}
-}
-
 func (c *ParseBlockContext) GetSequence() uint64 {
 	return c.HeightTime.Height
 }
@@ -79,7 +63,7 @@ func (c *ParseBlockContext) GetTxSender(txIndex uint) (common.Address, error) {
 		return ZeroAddress, txIndexOutOfRange
 	}
 
-	signer := ethtypes.MakeSigner(chainConfig, c.HeightTime.HeightBigInt, c.HeightTime.Timestamp)
+	signer := ethtypes.MakeSigner(chain_params.G.ChainConfig, c.HeightTime.HeightBigInt, c.HeightTime.Timestamp)
 	sender, err := ethtypes.Sender(signer, c.Transactions[txIndex])
 	if err != nil {
 		return ZeroAddress, err

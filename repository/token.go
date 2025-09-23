@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"bxs/chain"
+	"bxs/chain_params"
 	"bxs/repository/orm"
 	_ "gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -18,7 +18,7 @@ func NewTokenRepository(db *gorm.DB) *TokenRepository {
 
 func (r *TokenRepository) GetByAddressAndChainId(address string) (*orm.Token, error) {
 	var token orm.Token
-	err := r.db.Where("address = ? AND chain_id = ?", address, chain.ID).First(&token).Error
+	err := r.db.Where("address = ? AND chain_id = ?", address, chain_params.G.ChainID).First(&token).Error
 	if err != nil {
 		return nil, err
 	}
@@ -27,10 +27,10 @@ func (r *TokenRepository) GetByAddressAndChainId(address string) (*orm.Token, er
 
 func (r *TokenRepository) UpdateMainPair(address string, mainPair string) error {
 	return r.db.Model(&orm.Token{}).
-		Where("address = ? AND chain_id = ?", address, chain.ID).
+		Where("address = ? AND chain_id = ?", address, chain_params.G.ChainID).
 		Update("main_pair", mainPair).Error
 }
 
 func (r *TokenRepository) DeleteByAddressAndChainId(address string) error {
-	return r.db.Where("address = ? AND chain_id = ?", address, chain.ID).Delete(&orm.Token{}).Error
+	return r.db.Where("address = ? AND chain_id = ?", address, chain_params.G.ChainID).Delete(&orm.Token{}).Error
 }

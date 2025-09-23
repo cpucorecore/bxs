@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"bxs/chain"
+	"bxs/chain_params"
 	"bxs/log"
 	"bxs/types"
 	"context"
@@ -68,23 +68,23 @@ func NewTwoTierCache(redis *redis.Client) Cache {
 }
 
 func PriceCacheKey(blockNumber *big.Int) string {
-	return fmt.Sprintf("%d:P:%s", chain.ID, blockNumber.String())
+	return fmt.Sprintf("%d:P:%s", chain_params.G.ChainID, blockNumber.String())
 }
 
 func TokenCacheKey(address common.Address) string {
-	return fmt.Sprintf("%d:t:%s", chain.ID, address.Hex())
+	return fmt.Sprintf("%d:t:%s", chain_params.G.ChainID, address.Hex())
 }
 
 func PairCacheKey(address common.Address) string {
-	return fmt.Sprintf("%d:p:%s", chain.ID, address.Hex())
+	return fmt.Sprintf("%d:p:%s", chain_params.G.ChainID, address.Hex())
 }
 
 func MigrateTokenCacheKey(address common.Address) string {
-	return fmt.Sprintf("%d:m:%s", chain.ID, address.Hex())
+	return fmt.Sprintf("%d:m:%s", chain_params.G.ChainID, address.Hex())
 }
 
 var (
-	fbKey = fmt.Sprintf("%d:fb", chain.ID)
+	fbKey = fmt.Sprintf("%d:fb", chain_params.G.ChainID)
 )
 
 func (c *twoTierCache) SetPrice(blockNumber *big.Int, price decimal.Decimal) {

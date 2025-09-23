@@ -3,6 +3,7 @@ package main
 import (
 	"bxs/block_getter"
 	"bxs/cache"
+	"bxs/chain_params"
 	"bxs/config"
 	"bxs/log"
 	"bxs/metrics"
@@ -81,9 +82,9 @@ func main() {
 		log.Logger.Fatal("load config file err", zap.Error(loadConfigErr))
 	}
 
+	chain_params.LoadNetwork(config.G.TestNet)
 	log.InitLogger()
 	metrics.Init(config.G.MetricsPort)
-	types.InitChainConfig()
 
 	ethClient, dialEthErr := ethclient.Dial(config.G.Chain.Endpoint)
 	if dialEthErr != nil {

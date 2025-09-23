@@ -1,7 +1,7 @@
 package types
 
 import (
-	"bxs/chain"
+	"bxs/chain_params"
 	"bxs/repository/orm"
 	"encoding/json"
 	"github.com/ethereum/go-ethereum/common"
@@ -10,18 +10,15 @@ import (
 )
 
 const (
-	WETH_USDC_PAIR        = "0x0C0c1CfB948A75595B7D70703BF50190E62a2286" // newchain contract https://explorer.newtonproject.org/address/0x0C0c1CfB948A75595B7D70703BF50190E62a2286/read-contract
-	WETH                  = "0x51dA03503FBBA94B9d0D88C15690D840F02F15F4"
-	USDC                  = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
-	WBNBAddressTestnetHex = "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd"
+	WETH_USDC_PAIR = "0x0C0c1CfB948A75595B7D70703BF50190E62a2286" // newchain contract https://explorer.newtonproject.org/address/0x0C0c1CfB948A75595B7D70703BF50190E62a2286/read-contract
+	WETH           = "0x51dA03503FBBA94B9d0D88C15690D840F02F15F4"
+	USDC           = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
 )
 
 var (
 	WETHUSDCPairAddressUniswapV2 = common.HexToAddress(WETH_USDC_PAIR)
 	WETHAddress                  = common.HexToAddress(WETH)
 	USDCAddress                  = common.HexToAddress(USDC)
-	WBNBAddressTestnet           = common.HexToAddress(WBNBAddressTestnetHex)
-	WBNBAddress                  = WBNBAddressTestnet // TODO fixme: config
 
 	NativeToken = &Token{
 		Address:  ZeroAddress,
@@ -46,7 +43,7 @@ func IsWETH(address common.Address) bool {
 }
 
 func IsWBNB(address common.Address) bool {
-	return IsSameAddress(address, WBNBAddress)
+	return IsSameAddress(address, chain_params.G.WBNBAddress)
 }
 
 func IsNativeToken(address common.Address) bool {
@@ -148,7 +145,7 @@ func (t *Token) GetOrmToken() *orm.Token {
 		Symbol:      t.Symbol,
 		Decimal:     t.Decimals,
 		TotalSupply: t.TotalSupply.String(),
-		ChainId:     chain.ID,
+		ChainId:     chain_params.G.ChainID,
 		Block:       t.BlockNumber,
 		BlockAt:     t.BlockTime,
 		Program:     t.Program,
