@@ -49,7 +49,6 @@ func (e *SellEvent) CanGetPoolUpdate() bool {
 func (e *SellEvent) GetPoolUpdate() *types.PoolUpdate {
 	a0, a1 := ParseAmountsByPair(e.TokensSold, e.NativeTokenRaised, e.Pair)
 	return &types.PoolUpdate{
-		Program:       types.ProtocolNameXLaunch,
 		LogIndex:      e.EventCommon.LogIndex,
 		Address:       e.EventCommon.Pair.Address,
 		Token0Address: e.EventCommon.Pair.Token0Core.Address,

@@ -81,7 +81,6 @@ func (e *CreatedEvent) CanGetPoolUpdate() bool {
 
 func (e *CreatedEvent) GetPoolUpdate() *types.PoolUpdate {
 	u := &types.PoolUpdate{
-		Program:       types.ProtocolNameXLaunch,
 		LogIndex:      e.EventCommon.LogIndex,
 		Address:       e.EventCommon.Pair.Address,
 		Token0Address: e.EventCommon.Pair.Token0Core.Address,

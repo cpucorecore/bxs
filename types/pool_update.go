@@ -7,7 +7,6 @@ import (
 )
 
 type PoolUpdate struct {
-	Program       string // TODO remove
 	LogIndex      uint
 	Address       common.Address
 	Token0Address common.Address
@@ -17,9 +16,6 @@ type PoolUpdate struct {
 }
 
 func (u *PoolUpdate) Equal(tx *PoolUpdate) bool {
-	if u.Program != tx.Program {
-		return false
-	}
 	if u.LogIndex != tx.LogIndex {
 		return false
 	}

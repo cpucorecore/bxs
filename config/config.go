@@ -147,7 +147,6 @@ var (
 		},
 		EnableSequencer: true,
 		PriceService: &PriceServiceConf{
-			Mock:     false,
 			PoolSize: 1,
 		},
 		Kafka: &KafkaConf{

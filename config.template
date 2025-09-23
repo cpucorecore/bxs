@@ -33,7 +33,6 @@
     },
     "enable_sequencer": true,
     "price_service": {
-        "mock": false,
         "pool_size": 1
     },
     "kafka": {
