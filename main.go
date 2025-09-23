@@ -82,7 +82,7 @@ func main() {
 		log.Logger.Fatal("load config file err", zap.Error(loadConfigErr))
 	}
 
-	chain_params.LoadNetwork(config.G.TestNet)
+	chain_params.LoadNetwork(config.G.TestNet, config.G.XLaunchFactoryAddress)
 	log.InitLogger()
 	metrics.Init(config.G.MetricsPort)
 

@@ -1,6 +1,7 @@
 package event_parser
 
 import (
+	"bxs/chain_params"
 	"bxs/parser/event_parser/event"
 	"bxs/types"
 	"errors"
@@ -15,15 +16,10 @@ var (
 
 type PairCreatedEventParser struct {
 	TopicUnpacker
-	FactoryAddress common.Address
-}
-
-func (o *PairCreatedEventParser) CheckFactoryAddress(address common.Address) bool {
-	return types.IsSameAddress(o.FactoryAddress, address)
 }
 
 func (o *PairCreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
-	if !o.CheckFactoryAddress(ethLog.Address) {
+	if !types.IsSameAddress(ethLog.Address, chain_params.G.PancakeV2FactoryAddress) {
 		return nil, ErrWrongFactory
 	}
 

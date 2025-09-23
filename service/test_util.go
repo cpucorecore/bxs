@@ -2,6 +2,7 @@ package service
 
 import (
 	"bxs/cache"
+	"bxs/chain_params"
 	"bxs/config"
 	"context"
 	"github.com/ethereum/go-ethereum/common"
@@ -29,6 +30,9 @@ func GetTestContext() *TestContext {
 	if err != nil {
 		panic(err)
 	}
+
+	factoryAddress := common.HexToAddress("0xb2304dfA04e8E24723937c5f8fF5E917BC33af17")
+	chain_params.LoadNetwork(true, factoryAddress)
 
 	contractCaller := NewContractCaller(ethClient, config.G.ContractCaller.Retry.GetRetryParams())
 	cache := cache.NewMockCache()

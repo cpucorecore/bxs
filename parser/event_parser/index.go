@@ -49,7 +49,6 @@ var (
 				DataUnpackLen: 2,
 			},
 		},
-		FactoryAddress: pancakev2.FactoryAddressTestnet,
 	}
 
 	Topic2EventParser = map[common.Hash]EventParser{

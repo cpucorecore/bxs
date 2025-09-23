@@ -1,8 +1,8 @@
 package service
 
 import (
-	"bxs/abi/xlaunch"
 	"bxs/cache"
+	"bxs/chain_params"
 	"bxs/log"
 	"bxs/metrics"
 	"bxs/types"
@@ -239,7 +239,7 @@ func (s *pairService) doGetPair(pairAddress common.Address) *types.Pair {
 }
 
 func (s *pairService) verifyXLaunch(pair *types.Pair) bool {
-	verified, err := s.contractCaller.CallGetLaunchByAddress(&xlaunch.FactoryAddress, &pair.Address)
+	verified, err := s.contractCaller.CallGetLaunchByAddress(&chain_params.G.XLaunchFactoryAddress, &pair.Address)
 	if err != nil {
 		return false
 	}

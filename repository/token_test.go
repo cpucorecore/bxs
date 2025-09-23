@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"bxs/chain"
+	"bxs/chain_params"
 	"bxs/repository/orm"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/postgres"
@@ -33,7 +33,7 @@ func TestTokenRepository_Create(t *testing.T) {
 		Symbol:      "DUEL",
 		Decimal:     18,
 		TotalSupply: "2659527283.779538",
-		ChainId:     chain.ID,
+		ChainId:     chain_params.G.ChainID,
 	}
 
 	tokenRepository.Create(token)
@@ -52,7 +52,7 @@ func TestTokenRepository_CreateBatch_NoConflict(t *testing.T) {
 			Symbol:      "s1",
 			Decimal:     18,
 			TotalSupply: "1",
-			ChainId:     chain.ID,
+			ChainId:     chain_params.G.ChainID,
 		},
 		{
 			Address:     "0x02",
@@ -60,7 +60,7 @@ func TestTokenRepository_CreateBatch_NoConflict(t *testing.T) {
 			Symbol:      "s2",
 			Decimal:     18,
 			TotalSupply: "2",
-			ChainId:     chain.ID,
+			ChainId:     chain_params.G.ChainID,
 		},
 		{
 			Address:     "0x03",
@@ -68,7 +68,7 @@ func TestTokenRepository_CreateBatch_NoConflict(t *testing.T) {
 			Symbol:      "s3",
 			Decimal:     18,
 			TotalSupply: "3",
-			ChainId:     chain.ID,
+			ChainId:     chain_params.G.ChainID,
 		},
 	}
 
@@ -91,7 +91,7 @@ func TestTokenRepository_CreateBatch_ConflictWithDb(t *testing.T) {
 			Symbol:      "s1",
 			Decimal:     18,
 			TotalSupply: "1",
-			ChainId:     chain.ID,
+			ChainId:     chain_params.G.ChainID,
 		},
 		{
 			Address:     "0x02",
@@ -99,7 +99,7 @@ func TestTokenRepository_CreateBatch_ConflictWithDb(t *testing.T) {
 			Symbol:      "s2",
 			Decimal:     18,
 			TotalSupply: "2",
-			ChainId:     chain.ID,
+			ChainId:     chain_params.G.ChainID,
 		},
 		{
 			Address:     "0x03",
@@ -107,7 +107,7 @@ func TestTokenRepository_CreateBatch_ConflictWithDb(t *testing.T) {
 			Symbol:      "s3",
 			Decimal:     18,
 			TotalSupply: "3",
-			ChainId:     chain.ID,
+			ChainId:     chain_params.G.ChainID,
 		},
 	}
 
@@ -131,7 +131,7 @@ func TestTokenRepository_UpdateMainPair(t *testing.T) {
 		Symbol:      "s1",
 		Decimal:     18,
 		TotalSupply: "1",
-		ChainId:     chain.ID,
+		ChainId:     chain_params.G.ChainID,
 	}
 
 	tokenRepository.Create(token)

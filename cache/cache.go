@@ -83,9 +83,9 @@ func MigrateTokenCacheKey(address common.Address) string {
 	return fmt.Sprintf("%d:m:%s", chain_params.G.ChainID, address.Hex())
 }
 
-var (
-	fbKey = fmt.Sprintf("%d:fb", chain_params.G.ChainID)
-)
+func FbKey() string {
+	return fmt.Sprintf("%d:fb", chain_params.G.ChainID)
+}
 
 func (c *twoTierCache) SetPrice(blockNumber *big.Int, price decimal.Decimal) {
 	k := PriceCacheKey(blockNumber)
@@ -201,11 +201,11 @@ func (c *twoTierCache) DelPair(address common.Address) {
 }
 
 func (c *twoTierCache) SetFinishedBlock(blockNumber uint64) {
-	c.redis.Set(c.ctx, fbKey, blockNumber, 0)
+	c.redis.Set(c.ctx, FbKey(), blockNumber, 0)
 }
 
 func (c *twoTierCache) GetFinishedBlock() uint64 {
-	v, err := c.redis.Get(c.ctx, fbKey).Uint64()
+	v, err := c.redis.Get(c.ctx, FbKey()).Uint64()
 	if err != nil {
 		if !errors.Is(err, redis.Nil) {
 			log.Logger.Error("redis get err", zap.Error(err))

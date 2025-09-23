@@ -143,9 +143,6 @@ func (p *Pair) Equal(pair *Pair) bool {
 	if p.Block != pair.Block {
 		return false
 	}
-	if !p.BlockAt.Equal(pair.BlockAt) {
-		return false
-	}
 	if p.ProtocolId != pair.ProtocolId {
 		return false
 	}

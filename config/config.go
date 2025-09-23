@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/avast/retry-go/v4"
+	"github.com/ethereum/go-ethereum/common"
 	"os"
 	"time"
 )
@@ -97,19 +98,20 @@ type DBConf struct {
 }
 
 type Config struct {
-	Log               *LogConf            `json:"log"`
-	Chain             *ChainConf          `json:"chain"`
-	Redis             *RedisConf          `json:"redis"`
-	BlockGetter       *BlockGetterConf    `json:"block_getter"`
-	BlockHandler      *BlockHandlerConf   `json:"block_handler"`
-	EnableSequencer   bool                `json:"enable_sequencer"`
-	PriceService      *PriceServiceConf   `json:"price_service"`
-	Kafka             *KafkaConf          `json:"kafka"`
-	ContractCaller    *ContractCallerConf `json:"contract_caller"`
-	TxDatabase        *DBConf             `json:"tx_database"`
-	TokenPairDatabase *DBConf             `json:"token_pair_database"`
-	MetricsPort       int                 `json:"metrics_port"` // Port for Prometheus metrics
-	TestNet           bool                `json:"testnet"`
+	Log                   *LogConf            `json:"log"`
+	Chain                 *ChainConf          `json:"chain"`
+	Redis                 *RedisConf          `json:"redis"`
+	BlockGetter           *BlockGetterConf    `json:"block_getter"`
+	BlockHandler          *BlockHandlerConf   `json:"block_handler"`
+	EnableSequencer       bool                `json:"enable_sequencer"`
+	PriceService          *PriceServiceConf   `json:"price_service"`
+	Kafka                 *KafkaConf          `json:"kafka"`
+	ContractCaller        *ContractCallerConf `json:"contract_caller"`
+	TxDatabase            *DBConf             `json:"tx_database"`
+	TokenPairDatabase     *DBConf             `json:"token_pair_database"`
+	MetricsPort           int                 `json:"metrics_port"` // Port for Prometheus metrics
+	TestNet               bool                `json:"testnet"`
+	XLaunchFactoryAddress common.Address      `json:"xlaunch_factory_address"`
 }
 
 var (

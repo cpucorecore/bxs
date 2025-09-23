@@ -73,5 +73,6 @@
         }
     },
     "metrics_port": 9100,
-    "testnet": false
+    "testnet": false,
+    "xlaunch_factory_address": ""
 }

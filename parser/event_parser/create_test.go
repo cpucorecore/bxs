@@ -4,6 +4,7 @@ import (
 	"bxs/service"
 	"bxs/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -23,6 +24,10 @@ func TestCreated(t *testing.T) {
 	pairWrap := tc.PairService.GetPairTokens(pair)
 	event.SetPair(pairWrap.Pair)
 
+	token0InitAmount, err := decimal.NewFromString("1066666666.666666666666666666")
+	require.NoError(t, err)
+	token1InitAmount, err := decimal.NewFromString("6.933333333333333333")
+	require.NoError(t, err)
 	expectPair := &types.Pair{
 		Address:        common.HexToAddress("0x87485818145cEC5017a6466AAD2Ef5FEeA99aaae"),
 		TokensReversed: false,
@@ -31,12 +36,14 @@ func TestCreated(t *testing.T) {
 			Symbol:   "T",
 			Decimals: 18,
 		},
-		Token1Core: types.NativeTokenCore,
-		Block:      65762817,
-		BlockAt:    time.Unix(int64(blockTimestamp), 0),
-		ProtocolId: types.ProtocolIdXLaunch,
-		Filtered:   false,
-		FilterCode: 0,
+		Token1Core:       types.NativeTokenCore,
+		Token0InitAmount: token0InitAmount,
+		Token1InitAmount: token1InitAmount,
+		Block:            65762817,
+		BlockAt:          time.Unix(int64(blockTimestamp), 0),
+		ProtocolId:       types.ProtocolIdXLaunch,
+		Filtered:         false,
+		FilterCode:       0,
 	}
 
 	require.True(t, pairWrap.Pair.Equal(expectPair), "expect: %v, actual: %v", expectPair, pairWrap.Pair)

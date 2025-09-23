@@ -1,7 +1,7 @@
 package event_parser
 
 import (
-	"bxs/abi/xlaunch"
+	"bxs/chain_params"
 	"bxs/parser/event_parser/event"
 	"bxs/types"
 	"errors"
@@ -19,7 +19,7 @@ type CreatedEventParser struct {
 }
 
 func (o *CreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
-	if !types.IsSameAddress(ethLog.Address, xlaunch.FactoryAddress) {
+	if !types.IsSameAddress(ethLog.Address, chain_params.G.XLaunchFactoryAddress) {
 		return nil, ErrWrongFactoryAddress
 	}
 
