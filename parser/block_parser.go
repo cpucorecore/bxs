@@ -162,6 +162,9 @@ func (p *blockParser) parseTxReceipt(pbc *types.ParseBlockContext, txReceipt *et
 			pairs = append(pairs, pair)
 			tokens = append(tokens, token0)
 			continue
+		} else if event.IsMigrated() { // xlaunch buy
+			// save tokenAddr to redis
+		} else if event.IsPairCreated() { // pancake v2 PairCreated
 		} else {
 			pairAddr := event.GetPairAddress()
 			pair, ok := p.cache.GetPair(pairAddr)

@@ -1,6 +1,7 @@
 package event_parser
 
 import (
+	pancakev2 "bxs/abi/pancake/v2"
 	"bxs/abi/xlaunch"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -39,9 +40,22 @@ var (
 		},
 	}
 
+	pairCreatedEventParser = &CreatedEventParser{
+		TopicUnpacker{
+			topic: pancakev2.PairCreatedTopic0,
+			unpacker: EthLogUnpacker{
+				AbiEvent:      pancakev2.PairCreatedEvent,
+				TopicLen:      3,
+				DataUnpackLen: 2,
+			},
+			factoryAddr: pancakev2.FactoryAddressTestnet, // TODO fixme: config
+		},
+	}
+
 	Topic2EventParser = map[common.Hash]EventParser{
-		xlaunch.CreatedTopic0: createdEventParser,
-		xlaunch.BuyTopic0:     buyEventParser,
-		xlaunch.SellTopic0:    sellEventParser,
+		xlaunch.CreatedTopic0:       createdEventParser,
+		xlaunch.BuyTopic0:           buyEventParser,
+		xlaunch.SellTopic0:          sellEventParser,
+		pancakev2.PairCreatedTopic0: pairCreatedEventParser,
 	}
 )
