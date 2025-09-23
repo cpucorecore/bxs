@@ -24,10 +24,10 @@ func TestPair_IsFiltered(t *testing.T) {
 
 func TestPair_OrderTokens(t *testing.T) {
 	TokenWETH := &TokenCore{
-		Address: WETHAddress,
+		Address: WBNBAddress,
 	}
 	TokenUSDC := &TokenCore{
-		Address: USDCAddress,
+		Address: BUSDAddress,
 	}
 	TokenNonBase := &TokenCore{
 		Address: common.HexToAddress("0x1234567890123456789012345678901234567890"),

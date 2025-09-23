@@ -62,8 +62,7 @@ type RetryParams struct {
 }
 
 type PriceServiceConf struct {
-	Mock     bool `json:"mock"`
-	PoolSize int  `json:"pool_size"`
+	PoolSize int `json:"pool_size"`
 }
 
 type KafkaConf struct {

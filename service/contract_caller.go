@@ -1,7 +1,7 @@
 package service
 
 import (
-	uniswapv2 "bxs/abi/uniswap/v2"
+	pancakev2 "bxs/abi/pancake/v2"
 	"bxs/abi/xlaunch"
 	"bxs/config"
 	"bxs/metrics"
@@ -178,7 +178,7 @@ CallGetPair
 for uniswap/pancake v2
 */
 func (c *ContractCaller) CallGetPair(factoryAddress, token0Address, token1Address *common.Address) (common.Address, error) {
-	req := BuildCallContractReqDynamic(nil, factoryAddress, uniswapv2.FactoryAbi, "getPair", token0Address, token1Address)
+	req := BuildCallContractReqDynamic(nil, factoryAddress, pancakev2.FactoryAbi, "getPair", token0Address, token1Address)
 
 	bytes, err := c.CallContract(req)
 	if err != nil {
@@ -189,7 +189,7 @@ func (c *ContractCaller) CallGetPair(factoryAddress, token0Address, token1Addres
 		return types.ZeroAddress, ErrOutputEmpty
 	}
 
-	values, unpackErr := UniswapV2FactoryUnpacker.Unpack("getPair", bytes, 1)
+	values, unpackErr := PancakeV2FactoryUnpacker.Unpack("getPair", bytes, 1)
 	if unpackErr != nil {
 		return types.ZeroAddress, unpackErr
 	}
@@ -230,7 +230,7 @@ callGetReserves
 for uniswap/pancake v2
 */
 func (c *ContractCaller) callGetReserves(blockNumber *big.Int) ([]interface{}, error) {
-	req := BuildCallContractReqDynamic(blockNumber, &types.WETHUSDCPairAddressUniswapV2, uniswapv2.PairAbi, "getReserves")
+	req := BuildCallContractReqDynamic(blockNumber, &types.WbnbBusdPairAddressUniswapV2, pancakev2.PairAbi, "getReserves")
 
 	bytes, err := c.CallContract(req)
 	if err != nil {
@@ -241,7 +241,7 @@ func (c *ContractCaller) callGetReserves(blockNumber *big.Int) ([]interface{}, e
 		return nil, ErrOutputEmpty
 	}
 
-	values, unpackErr := UniswapV2PairUnpacker.Unpack("getReserves", bytes, 3)
+	values, unpackErr := PancakeV2PairUnpacker.Unpack("getReserves", bytes, 3)
 	if unpackErr != nil {
 		return nil, unpackErr
 	}

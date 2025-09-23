@@ -28,11 +28,6 @@ func CalcAmountAndPrice(
 		if !token0Amount.IsZero() {
 			priceUSD = amountUSD.Div(token0Amount)
 		}
-	} else if types.IsUSDC(token1Address) {
-		amountUSD = token1Amount
-		if !token0Amount.IsZero() {
-			priceUSD = amountUSD.Div(token0Amount)
-		}
 	}
 	return
 }

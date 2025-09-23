@@ -121,28 +121,6 @@ func (p *Pair) swapToken0Token1() {
 	p.TokensReversed = true
 }
 
-func (p *Pair) OrderToken0Token1() bool {
-	if p.Token0Core == nil || p.Token1Core == nil {
-		return false
-	}
-
-	token0IsBaseToken := IsBaseToken(p.Token0Core.Address)
-	token1IsBaseToken := IsBaseToken(p.Token1Core.Address)
-
-	if token0IsBaseToken && token1IsBaseToken {
-		if IsUSDC(p.Token0Core.Address) {
-			p.swapToken0Token1()
-		}
-	} else if !token0IsBaseToken && !token1IsBaseToken {
-	} else {
-		if token0IsBaseToken {
-			p.swapToken0Token1()
-		}
-	}
-
-	return p.TokensReversed
-}
-
 func (p *Pair) Equal(pair *Pair) bool {
 	if !IsSameAddress(p.Address, pair.Address) {
 		return false

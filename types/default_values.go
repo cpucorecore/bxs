@@ -8,6 +8,6 @@ import (
 var (
 	ZeroAddress       = common.Address{}
 	ZeroDecimal       = decimal.NewFromInt(0)
-	DefaultDecimals   = int8(18)
+	Decimals18        = int8(18)
 	NativeTokenSymbol = "BNB"
 )

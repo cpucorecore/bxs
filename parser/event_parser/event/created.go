@@ -37,7 +37,7 @@ func (e *CreatedEvent) DoGetPair() *types.Pair {
 		Token0Core: &types.TokenCore{
 			Address:  e.TokenAddress,
 			Symbol:   e.Symbol,
-			Decimals: types.DefaultDecimals,
+			Decimals: types.Decimals18,
 		},
 		Token1Core: types.NativeTokenCore,
 		Block:      e.BlockNumber,
@@ -61,7 +61,7 @@ func (e *CreatedEvent) DoGetToken0() *types.Token {
 		Creator:     e.Creator,
 		Name:        e.Name,
 		Symbol:      e.Symbol,
-		Decimals:    types.DefaultDecimals,
+		Decimals:    types.Decimals18,
 		BlockNumber: e.BlockNumber,
 		BlockTime:   e.BlockTime,
 		Program:     types.ProtocolNameXLaunch,

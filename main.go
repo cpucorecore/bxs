@@ -113,7 +113,7 @@ func main() {
 	contractCaller := service.NewContractCaller(ethClient, config.G.ContractCaller.Retry.GetRetryParams())
 
 	pairService := service.NewPairService(cache, contractCaller)
-	priceService := service.NewPriceService(config.G.PriceService.Mock, cache, contractCallerArchive, ethClientArchive, config.G.PriceService.PoolSize)
+	priceService := service.NewPriceService(config.G.TestNet, cache, contractCallerArchive, ethClientArchive, config.G.PriceService.PoolSize)
 
 	sequencerForBlockHandler := sequencer.NewSequencer()
 

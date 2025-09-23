@@ -54,6 +54,5 @@ func (tp *TestPair) GetExpectedPair() *types.Pair {
 		ProtocolId: tp.protocolId,
 	}
 
-	pair.OrderToken0Token1()
 	return pair
 }

@@ -10,36 +10,32 @@ import (
 )
 
 const (
-	WETH_USDC_PAIR = "0x0C0c1CfB948A75595B7D70703BF50190E62a2286" // newchain contract https://explorer.newtonproject.org/address/0x0C0c1CfB948A75595B7D70703BF50190E62a2286/read-contract
-	WETH           = "0x51dA03503FBBA94B9d0D88C15690D840F02F15F4"
-	USDC           = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+	WbnbBusdPair = "0x58F876857a02D6762E0101bb5C46A8c1ED44Dc16"
+	WBNB         = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"
+	BUSD         = "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56"
 )
 
 var (
-	WETHUSDCPairAddressUniswapV2 = common.HexToAddress(WETH_USDC_PAIR)
-	WETHAddress                  = common.HexToAddress(WETH)
-	USDCAddress                  = common.HexToAddress(USDC)
+	WbnbBusdPairAddressUniswapV2 = common.HexToAddress(WbnbBusdPair)
+	WBNBAddress                  = common.HexToAddress(WBNB)
+	BUSDAddress                  = common.HexToAddress(BUSD)
 
 	NativeToken = &Token{
 		Address:  ZeroAddress,
 		Creator:  ZeroAddress,
 		Symbol:   NativeTokenSymbol,
-		Decimals: DefaultDecimals,
+		Decimals: Decimals18,
 	}
 
 	NativeTokenCore = &TokenCore{
 		Address:  ZeroAddress,
 		Symbol:   NativeTokenSymbol,
-		Decimals: DefaultDecimals,
+		Decimals: Decimals18,
 	}
 )
 
 func IsSameAddress(address1, address2 common.Address) bool {
 	return address1.Cmp(address2) == 0
-}
-
-func IsWETH(address common.Address) bool {
-	return IsSameAddress(address, WETHAddress)
 }
 
 func IsWBNB(address common.Address) bool {
@@ -50,16 +46,8 @@ func IsNativeToken(address common.Address) bool {
 	return IsSameAddress(address, ZeroAddress)
 }
 
-func IsUSDC(address common.Address) bool {
-	return IsSameAddress(address, USDCAddress)
-}
-
-func IsZeroAddress(address common.Address) bool {
-	return IsSameAddress(address, ZeroAddress)
-}
-
 func IsBaseToken(address common.Address) bool {
-	if IsZeroAddress(address) || IsWETH(address) || IsUSDC(address) {
+	if IsNativeToken(address) {
 		return true
 	}
 	return false

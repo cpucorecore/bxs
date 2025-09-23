@@ -3,7 +3,7 @@ package service
 import (
 	"bxs/abi/bep20"
 	"bxs/abi/ds_token"
-	uniswapv2 "bxs/abi/uniswap/v2"
+	pancakev2 "bxs/abi/pancake/v2"
 	"bxs/abi/xlaunch"
 	"bxs/types"
 	"errors"
@@ -53,12 +53,12 @@ var (
 		ds_token.Abi,
 	})
 
-	UniswapV2PairUnpacker = NewUnpacker([]*abi.ABI{
-		uniswapv2.PairAbi,
+	PancakeV2PairUnpacker = NewUnpacker([]*abi.ABI{
+		pancakev2.PairAbi,
 	})
 
-	UniswapV2FactoryUnpacker = NewUnpacker([]*abi.ABI{
-		uniswapv2.FactoryAbi,
+	PancakeV2FactoryUnpacker = NewUnpacker([]*abi.ABI{
+		pancakev2.FactoryAbi,
 	})
 
 	XLaunchUnpacker = NewUnpacker([]*abi.ABI{
@@ -74,9 +74,9 @@ var (
 		"symbol":      TokenUnpacker,
 		"decimals":    TokenUnpacker,
 		"totalSupply": TokenUnpacker,
-		"token0":      UniswapV2PairUnpacker,
-		"token1":      UniswapV2PairUnpacker,
-		"getReserves": UniswapV2PairUnpacker,
+		"token0":      PancakeV2PairUnpacker,
+		"token1":      PancakeV2PairUnpacker,
+		"getReserves": PancakeV2PairUnpacker,
 		"token":       XLaunchUnpacker,
 	}
 )
