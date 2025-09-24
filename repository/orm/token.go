@@ -17,8 +17,6 @@ type Token struct {
 	Program     string
 	CreatedAt   time.Time `gorm:"autoCreateTime"`
 	MainPair    string
-	Description string
-	Url         string
 	Telegram    string
 	Twitter     string
 	Website     string

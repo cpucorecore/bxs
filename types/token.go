@@ -130,8 +130,6 @@ func (t *Token) GetOrmToken() *orm.Token {
 		Block:       t.BlockNumber,
 		BlockAt:     t.BlockTime,
 		Program:     t.Program,
-		Url:         t.URL,
-		Description: t.Description,
 		Telegram:    t.Telegram,
 		Twitter:     t.Twitter,
 		Website:     t.Website,
