@@ -20,7 +20,6 @@ type PriceService interface {
 }
 
 type priceService struct {
-	testnet        bool
 	cache          cache.Cache
 	contractCaller *ContractCaller
 	workPoolSize   int
@@ -29,7 +28,6 @@ type priceService struct {
 }
 
 func NewPriceService(
-	testnet bool,
 	cache cache.Cache,
 	contractCaller *ContractCaller,
 	ethClient *ethclient.Client,
@@ -45,7 +43,6 @@ func NewPriceService(
 	}
 
 	return &priceService{
-		testnet:        testnet,
 		cache:          cache,
 		contractCaller: contractCaller,
 		workPoolSize:   poolSize,
@@ -55,10 +52,6 @@ func NewPriceService(
 }
 
 func (ps *priceService) Start(startBlockNumber uint64) {
-	if ps.testnet {
-		return
-	}
-
 	if ps.workPoolSize <= 0 {
 		return
 	}
@@ -82,15 +75,7 @@ func (ps *priceService) Start(startBlockNumber uint64) {
 	}()
 }
 
-var (
-	mockPrice = decimal.NewFromBigInt(big.NewInt(1), 0)
-)
-
 func (ps *priceService) GetPrice(blockNumber *big.Int) (decimal.Decimal, error) {
-	if ps.testnet {
-		return mockPrice, nil
-	}
-
 	cachePrice, ok := ps.cache.GetPrice(blockNumber)
 	if ok {
 		return cachePrice, nil

@@ -3,6 +3,7 @@ package service
 import (
 	pancakev2 "bxs/abi/pancake/v2"
 	"bxs/abi/xlaunch"
+	"bxs/chain_params"
 	"bxs/config"
 	"bxs/metrics"
 	"bxs/types"
@@ -230,7 +231,7 @@ callGetReserves
 for uniswap/pancake v2
 */
 func (c *ContractCaller) callGetReserves(blockNumber *big.Int) ([]interface{}, error) {
-	req := BuildCallContractReqDynamic(blockNumber, &types.WbnbBusdPairAddressUniswapV2, pancakev2.PairAbi, "getReserves")
+	req := BuildCallContractReqDynamic(blockNumber, &chain_params.G.PancakeV2BusdWbnbPairAddress, pancakev2.PairAbi, "getReserves")
 
 	bytes, err := c.CallContract(req)
 	if err != nil {

@@ -9,17 +9,7 @@ import (
 	"time"
 )
 
-const (
-	WbnbBusdPair = "0x58F876857a02D6762E0101bb5C46A8c1ED44Dc16"
-	WBNB         = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"
-	BUSD         = "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56"
-)
-
 var (
-	WbnbBusdPairAddressUniswapV2 = common.HexToAddress(WbnbBusdPair)
-	WBNBAddress                  = common.HexToAddress(WBNB)
-	BUSDAddress                  = common.HexToAddress(BUSD)
-
 	NativeToken = &Token{
 		Address:  ZeroAddress,
 		Creator:  ZeroAddress,
