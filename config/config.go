@@ -63,7 +63,8 @@ type RetryParams struct {
 }
 
 type PriceServiceConf struct {
-	PoolSize int `json:"pool_size"`
+	PoolSize  int  `json:"pool_size"`
+	FromChain bool `json:"from_chain"`
 }
 
 type KafkaConf struct {
@@ -149,7 +150,8 @@ var (
 		},
 		EnableSequencer: true,
 		PriceService: &PriceServiceConf{
-			PoolSize: 1,
+			PoolSize:  1,
+			FromChain: true,
 		},
 		Kafka: &KafkaConf{
 			Enabled:           false,
