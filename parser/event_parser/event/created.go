@@ -2,8 +2,19 @@ package event
 
 import (
 	"bxs/types"
+	"bxs/util"
 	"github.com/ethereum/go-ethereum/common"
 	"math/big"
+)
+
+const (
+	MaxNameLen        = 256
+	MaxSymbolLen      = 256
+	MaxURLLen         = 256
+	MaxDescriptionLen = 512
+	MaxTelegramLen    = 256
+	MaxTwitterLen     = 256
+	MaxWebsiteLen     = 256
 )
 
 type CreatedEvent struct {
@@ -17,6 +28,19 @@ type CreatedEvent struct {
 	Symbol              string
 	URL                 string
 	Description         string
+	Telegram            string
+	Twitter             string
+	Website             string
+}
+
+func (e *CreatedEvent) FormatString() {
+	e.Name = util.TruncateToMaxChars(util.FormatUTF8(e.Name), MaxNameLen)
+	e.Symbol = util.TruncateToMaxChars(util.FormatUTF8(e.Symbol), MaxSymbolLen)
+	e.URL = util.TruncateToMaxChars(util.FormatUTF8(e.URL), MaxURLLen)
+	e.Description = util.TruncateToMaxChars(util.FormatUTF8(e.Description), MaxDescriptionLen)
+	e.Telegram = util.TruncateToMaxChars(util.FormatUTF8(e.Telegram), MaxTelegramLen)
+	e.Twitter = util.TruncateToMaxChars(util.FormatUTF8(e.Twitter), MaxTwitterLen)
+	e.Website = util.TruncateToMaxChars(util.FormatUTF8(e.Website), MaxWebsiteLen)
 }
 
 func (e *CreatedEvent) GetPairAddress() common.Address {
@@ -68,6 +92,9 @@ func (e *CreatedEvent) DoGetToken0() *types.Token {
 		Filtered:    false,
 		URL:         e.URL,
 		Description: e.Description,
+		Telegram:    e.Telegram,
+		Twitter:     e.Twitter,
+		Website:     e.Website,
 	}
 }
 

@@ -39,7 +39,12 @@ func (o *CreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
 		Symbol:              eventInput[3].(string),
 		URL:                 eventInput[4].(string),
 		Description:         eventInput[5].(string),
+		Telegram:            eventInput[6].(string),
+		Twitter:             eventInput[7].(string),
+		Website:             eventInput[8].(string),
 	}
+
+	createdEvent.FormatString()
 
 	createdEvent.Pair = createdEvent.DoGetPair()
 	return createdEvent, nil

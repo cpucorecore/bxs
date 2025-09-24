@@ -1,6 +1,9 @@
 package util
 
-import "unicode/utf8"
+import (
+	"strings"
+	"unicode/utf8"
+)
 
 // TruncateToMaxChars safely truncates a string to a maximum number of characters
 // without breaking UTF-8 encoding. If the string exceeds maxChars,
@@ -12,4 +15,16 @@ func TruncateToMaxChars(s string, maxChars int) string {
 	// Convert to runes for proper character handling
 	runes := []rune(s)
 	return string(runes[:maxChars])
+}
+
+func SanitizeUTF8(s string) string {
+	if !utf8.ValidString(s) {
+		return strings.ToValidUTF8(s, "?")
+	}
+	return s
+}
+
+func FormatUTF8(s string) string {
+	s = strings.ReplaceAll(s, "\x00", "") // for postgres db do not accept 0x00 as string char
+	return SanitizeUTF8(s)
 }

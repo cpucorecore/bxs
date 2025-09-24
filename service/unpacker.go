@@ -6,12 +6,11 @@ import (
 	pancakev2 "bxs/abi/pancake/v2"
 	"bxs/abi/xlaunch"
 	"bxs/types"
+	"bxs/util"
 	"errors"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"math/big"
-	"strings"
-	"unicode/utf8"
 )
 
 type Unpacker interface {
@@ -81,13 +80,6 @@ var (
 	}
 )
 
-func sanitizeUTF8(s string) string {
-	if !utf8.ValidString(s) {
-		return strings.ToValidUTF8(s, "?")
-	}
-	return s
-}
-
 func ParseString(value interface{}) (string, error) {
 	var str string
 	var err error
@@ -103,8 +95,7 @@ func ParseString(value interface{}) (string, error) {
 		return "", err
 	}
 
-	str = strings.ReplaceAll(str, "\x00", "") // for postgres db do not accept 0x00 as string char
-	return sanitizeUTF8(str), nil
+	return util.FormatUTF8(str), nil
 }
 
 func ParseInt(value interface{}) (int, error) {

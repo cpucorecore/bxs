@@ -55,8 +55,11 @@ type Token struct {
 	Program     string
 	Filtered    bool
 	Timestamp   time.Time
-	URL         string
+	URL         string `json:"url"`
 	Description string
+	Telegram    string
+	Twitter     string
+	Website     string
 }
 
 func (t *Token) MarshalBinary() ([]byte, error) {
@@ -116,7 +119,7 @@ func (t *Token) Equal(token *Token) bool {
 }
 
 func (t *Token) GetOrmToken() *orm.Token {
-	ormToken := &orm.Token{
+	return &orm.Token{
 		Address:     t.Address.String(),
 		Creator:     t.Creator.String(),
 		Name:        t.Name,
@@ -127,7 +130,10 @@ func (t *Token) GetOrmToken() *orm.Token {
 		Block:       t.BlockNumber,
 		BlockAt:     t.BlockTime,
 		Program:     t.Program,
+		Url:         t.URL,
+		Description: t.Description,
+		Telegram:    t.Telegram,
+		Twitter:     t.Twitter,
+		Website:     t.Website,
 	}
-
-	return ormToken.Normalize()
 }
