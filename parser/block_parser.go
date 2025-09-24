@@ -172,7 +172,7 @@ func (p *blockParser) parseTxReceipt(pbc *types.ParseBlockContext, txReceipt *et
 		pairAddr := event.GetPairAddress()
 		pair, ok := p.cache.GetPair(pairAddr)
 		if !ok {
-			log.Logger.Sugar().Warnf("get Pool %s err", pairAddr)
+			log.Logger.Sugar().Warnf("pool %s not cached, it should be", pairAddr)
 			pw := p.pairService.GetPair(pairAddr)
 			pair = pw.Pair
 			if pair == nil {
@@ -190,7 +190,7 @@ func (p *blockParser) parseTxReceipt(pbc *types.ParseBlockContext, txReceipt *et
 
 		if event.IsMigrated() {
 			p.cache.SetMigrateToken(event.GetPair().Token0Core.Address)
-			migratedPools = append(migratedPools, event.GetPair().Address)
+			migratedPools = append(migratedPools, pairAddr)
 		}
 
 		txResult.AddPoolUpdate(event.GetPoolUpdate())
@@ -243,34 +243,44 @@ func (p *blockParser) commitBlockResult(blockResult *types.BlockResult) {
 	blockInfo := blockResult.GetKafkaMessage()
 
 	now := time.Now()
-	err := p.dbService.AddTokens(blockInfo.NewTokens)
-	if err != nil {
-		log.Logger.Fatal("add tokens err", zap.Any("height", blockInfo.Height), zap.Error(err))
+	var err error
+	if len(blockInfo.NewTokens) > 0 {
+		err = p.dbService.AddTokens(blockInfo.NewTokens)
+		if err != nil {
+			log.Logger.Fatal("add tokens err", zap.Any("height", blockInfo.Height), zap.Error(err))
+		}
 	}
 
-	err = p.dbService.AddPairs(blockInfo.NewPairs)
-	if err != nil {
-		log.Logger.Fatal("add pairs err", zap.Any("height", blockInfo.Height), zap.Error(err))
+	if len(blockInfo.NewPairs) > 0 {
+		err = p.dbService.AddPairs(blockInfo.NewPairs)
+		if err != nil {
+			log.Logger.Fatal("add pairs err", zap.Any("height", blockInfo.Height), zap.Error(err))
+		}
 	}
 
-	err = p.dbService.AddTxs(blockInfo.Txs)
-	if err != nil {
-		log.Logger.Fatal("add txs err", zap.Any("height", blockInfo.Height), zap.Error(err))
+	if len(blockInfo.Txs) > 0 {
+		err = p.dbService.AddTxs(blockInfo.Txs)
+		if err != nil {
+			log.Logger.Fatal("add txs err", zap.Any("height", blockInfo.Height), zap.Error(err))
+		}
 	}
-	err = p.dbService.AddActions(blockInfo.Actions)
-	if err != nil {
-		log.Logger.Fatal("add actions err", zap.Any("height", blockInfo.Height), zap.Error(err))
+
+	if len(blockInfo.Actions) > 0 {
+		err = p.dbService.AddActions(blockInfo.Actions)
+		if err != nil {
+			log.Logger.Fatal("add actions err", zap.Any("height", blockInfo.Height), zap.Error(err))
+		}
 	}
 
 	duration := time.Since(now)
 	metrics.DbOperationDurationMs.Observe(float64(duration.Milliseconds()))
 	log.Logger.Sugar().Debugf("block %d native token price %s", blockInfo.Height, blockInfo.NativeTokenPrice)
 	if blockInfo.UsefulInfo() {
-		log.Logger.Info("db operation duration",
+		log.Logger.Info("summary",
 			zap.Uint64("block", blockResult.Height),
-			zap.Float64("duration", duration.Seconds()),
-			zap.Int("new tokens", len(blockInfo.NewTokens)),
-			zap.Int("new pairs", len(blockInfo.NewPairs)),
+			zap.Float64("db duration", duration.Seconds()),
+			zap.Int("tokens", len(blockInfo.NewTokens)),
+			zap.Int("pairs", len(blockInfo.NewPairs)),
 			zap.Int("actions", len(blockInfo.Actions)),
 			zap.Int("txs", len(blockInfo.Txs)))
 	}

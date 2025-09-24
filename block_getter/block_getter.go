@@ -253,6 +253,7 @@ func (bg *blockGetter) startQueryNewHead() {
 			log.Logger.Debug("New block", zap.Uint64("height", bn))
 			bg.setHeaderHeight(bn)
 			metrics.NewestHeight.Set(float64(bn))
+			time.Sleep(time.Millisecond * 100)
 		}
 	}()
 }
