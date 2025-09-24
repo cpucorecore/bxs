@@ -13,7 +13,7 @@ var (
 			unpacker: EthLogUnpacker{
 				AbiEvent:      xlaunch.CreatedEvent,
 				TopicLen:      4,
-				DataUnpackLen: 6,
+				DataUnpackLen: 9,
 			},
 		},
 	}
