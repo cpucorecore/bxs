@@ -19,18 +19,19 @@ func (tpe *TxPairEvent) AddEvent(event Event) {
 
 type TxResult struct {
 	BlockTime         time.Time
-	Maker             common.Address
+	Sender            common.Address
 	SwapEvents        []Event
 	PairCreatedEvents []Event
 	PoolUpdates       []*PoolUpdate
 	Pairs             []*Pair
 	Tokens            []*Token
+	MigratedPools     []common.Address
 	Actions           []*orm.Action
 }
 
-func NewTxResult(maker common.Address, blockTime time.Time) *TxResult {
+func NewTxResult(sender common.Address, blockTime time.Time) *TxResult {
 	return &TxResult{
-		Maker:             maker,
+		Sender:            sender,
 		BlockTime:         blockTime,
 		SwapEvents:        make([]Event, 0, 32),
 		PairCreatedEvents: make([]Event, 0, 32),
@@ -39,13 +40,13 @@ func NewTxResult(maker common.Address, blockTime time.Time) *TxResult {
 }
 
 func (r *TxResult) AddSwapEvent(event Event) {
-	event.SetMaker(r.Maker)
+	event.SetMaker(r.Sender)
 	event.SetBlockTime(r.BlockTime)
 	r.SwapEvents = append(r.SwapEvents, event)
 }
 
 func (r *TxResult) AddPairCreatedEvent(event Event) {
-	event.SetMaker(r.Maker)
+	event.SetMaker(r.Sender)
 	event.SetBlockTime(r.BlockTime)
 	r.PairCreatedEvents = append(r.PairCreatedEvents, event)
 }
@@ -56,6 +57,10 @@ func (r *TxResult) SetPairs(pairs []*Pair) {
 
 func (r *TxResult) SetTokens(tokens []*Token) {
 	r.Tokens = tokens
+}
+
+func (r *TxResult) SetMigratedPools(pools []common.Address) {
+	r.MigratedPools = pools
 }
 
 func (r *TxResult) SetActions(actions []*orm.Action) {

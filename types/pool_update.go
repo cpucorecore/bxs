@@ -7,12 +7,12 @@ import (
 )
 
 type PoolUpdate struct {
-	LogIndex      uint
-	Address       common.Address
-	Token0Address common.Address
-	Token1Address common.Address
-	Token0Amount  decimal.Decimal
-	Token1Amount  decimal.Decimal
+	LogIndex uint
+	Address  common.Address
+	Token0   common.Address
+	Token1   common.Address
+	Amount0  decimal.Decimal
+	Amount1  decimal.Decimal
 }
 
 func (u *PoolUpdate) Equal(tx *PoolUpdate) bool {
@@ -22,16 +22,16 @@ func (u *PoolUpdate) Equal(tx *PoolUpdate) bool {
 	if u.Address != tx.Address {
 		return false
 	}
-	if u.Token0Address != tx.Token0Address {
+	if u.Token0 != tx.Token0 {
 		return false
 	}
-	if u.Token1Address != tx.Token1Address {
+	if u.Token1 != tx.Token1 {
 		return false
 	}
-	if !util.DecimalEqual(u.Token0Amount, tx.Token0Amount) {
+	if !util.DecimalEqual(u.Amount0, tx.Amount0) {
 		return false
 	}
-	if !util.DecimalEqual(u.Token1Amount, tx.Token1Amount) {
+	if !util.DecimalEqual(u.Amount1, tx.Amount1) {
 		return false
 	}
 	return true

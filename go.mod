@@ -7,7 +7,6 @@ require (
 	github.com/avast/retry-go/v4 v4.6.1
 	github.com/ethereum/go-ethereum v1.15.10
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/go-resty/resty/v2 v2.16.5
 	github.com/google/uuid v1.6.0
 	github.com/panjf2000/ants/v2 v2.11.2
 	github.com/patrickmn/go-cache v2.1.0+incompatible
@@ -116,6 +115,7 @@ require (
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
+	golang.org/x/time v0.6.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231016165738-49dd2c1f3d0b // indirect
 	google.golang.org/grpc v1.59.0 // indirect
 	google.golang.org/protobuf v1.36.0 // indirect

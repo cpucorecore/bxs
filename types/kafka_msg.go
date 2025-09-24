@@ -2,6 +2,7 @@ package types
 
 import (
 	"bxs/repository/orm"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 type BlockInfo struct {
@@ -9,12 +10,17 @@ type BlockInfo struct {
 	Timestamp        uint64
 	NativeTokenPrice string
 	Txs              []*orm.Tx
+	MigratedPools    []common.Address
 	Actions          []*orm.Action
 	NewTokens        []*orm.Token
 	NewPairs         []*orm.Pair
 	PoolUpdates      []*PoolUpdate
 }
 
-func (bi *BlockInfo) CatchInfo() bool {
-	return len(bi.Txs) != 0 || len(bi.NewTokens) != 0 || len(bi.Actions) != 0 || len(bi.NewPairs) != 0
+func (bi *BlockInfo) UsefulInfo() bool {
+	return len(bi.Txs) != 0 ||
+		len(bi.NewTokens) != 0 ||
+		len(bi.MigratedPools) != 0 ||
+		len(bi.Actions) != 0 ||
+		len(bi.NewPairs) != 0
 }

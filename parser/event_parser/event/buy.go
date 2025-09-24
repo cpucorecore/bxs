@@ -49,12 +49,12 @@ func (e *BuyEvent) CanGetPoolUpdate() bool {
 
 func (e *BuyEvent) GetPoolUpdate() *types.PoolUpdate {
 	u := &types.PoolUpdate{
-		LogIndex:      e.EventCommon.LogIndex,
-		Address:       e.EventCommon.Pair.Address,
-		Token0Address: e.EventCommon.Pair.Token0Core.Address,
-		Token1Address: e.EventCommon.Pair.Token1Core.Address,
+		LogIndex: e.EventCommon.LogIndex,
+		Address:  e.EventCommon.Pair.Address,
+		Token0:   e.EventCommon.Pair.Token0Core.Address,
+		Token1:   e.EventCommon.Pair.Token1Core.Address,
 	}
-	u.Token0Amount, u.Token1Amount = ParseAmountsByPair(e.TokensSold, e.NativeTokenRaised, e.Pair)
+	u.Amount0, u.Amount1 = ParseAmountsByPair(e.TokensSold, e.NativeTokenRaised, e.Pair)
 	return u
 }
 

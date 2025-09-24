@@ -28,21 +28,21 @@ var (
 	PancakeV2FactoryAddress        = common.HexToAddress(PancakeV2FactoryAddressHex)
 	PancakeV2FactoryAddressTestnet = common.HexToAddress(PancakeV2FactoryAddressTestnetHex)
 
-	mainnetParams = ChainParams{
+	mainnetParams = &ChainParams{
 		ChainID:                 chain.BSCMainnetID,
 		ChainConfig:             v1_5_17.BSCChainConfig,
 		PancakeV2FactoryAddress: PancakeV2FactoryAddress,
 		WBNBAddress:             WBNBAddress,
 	}
 
-	testnetParams = ChainParams{
+	testnetParams = &ChainParams{
 		ChainID:                 chain.BSCTestnetID,
 		ChainConfig:             v1_5_17.ChapelChainConfig,
 		PancakeV2FactoryAddress: PancakeV2FactoryAddressTestnet,
 		WBNBAddress:             WBNBAddressTestnet,
 	}
 
-	G ChainParams
+	G *ChainParams
 )
 
 func LoadNetwork(testnet bool, xLaunchFactoryAddress common.Address) {

@@ -10,6 +10,7 @@ import (
 	"bxs/service"
 	"bxs/types"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/panjf2000/ants/v2"
 	"github.com/shopspring/decimal"
@@ -125,13 +126,6 @@ func (p *blockParser) waitForNativeTokenPrice(blockNumber *big.Int, blockTimesta
 	}
 }
 
-type TxResultAndPairWrap struct {
-	TxResult  *types.TxResult
-	PairWraps []*types.PairWrap
-	Pairs     []*types.Pair
-	Tokens    []*types.Token
-}
-
 func (p *blockParser) parseTxReceipt(pbc *types.ParseBlockContext, txReceipt *ethtypes.Receipt) *types.TxResult {
 	txSender, err := pbc.GetTxSender(txReceipt.TransactionIndex)
 	if err != nil {
@@ -145,17 +139,20 @@ func (p *blockParser) parseTxReceipt(pbc *types.ParseBlockContext, txReceipt *et
 	txResult := types.NewTxResult(txSender, pbc.HeightTime.Time)
 	pairs := make([]*types.Pair, 0, 2)
 	tokens := make([]*types.Token, 0, 2)
+	migratedPools := make([]common.Address, 0, 2)
 	for _, ethLog := range txReceipt.Logs {
 		if len(ethLog.Topics) == 0 {
 			continue
 		}
-		
+
 		event, parseErr := p.topicRouter.Parse(ethLog)
 		if parseErr != nil {
 			continue
 		}
 
 		if event.IsCreated() {
+			event.SetBlockTime(pbc.HeightTime.Time)
+
 			pair := event.GetPair()
 			token0 := event.GetToken0()
 			p.cache.SetPair(pair)
@@ -193,6 +190,7 @@ func (p *blockParser) parseTxReceipt(pbc *types.ParseBlockContext, txReceipt *et
 
 		if event.IsMigrated() {
 			p.cache.SetMigrateToken(event.GetPair().Token0Core.Address)
+			migratedPools = append(migratedPools, event.GetPair().Address)
 		}
 
 		txResult.AddPoolUpdate(event.GetPoolUpdate())
@@ -201,6 +199,7 @@ func (p *blockParser) parseTxReceipt(pbc *types.ParseBlockContext, txReceipt *et
 
 	txResult.SetPairs(pairs)
 	txResult.SetTokens(tokens)
+	txResult.SetMigratedPools(migratedPools)
 
 	p.processTxPairCreatedEvents(txResult)
 	return txResult
@@ -266,7 +265,7 @@ func (p *blockParser) commitBlockResult(blockResult *types.BlockResult) {
 	duration := time.Since(now)
 	metrics.DbOperationDurationMs.Observe(float64(duration.Milliseconds()))
 	log.Logger.Sugar().Debugf("block %d native token price %s", blockInfo.Height, blockInfo.NativeTokenPrice)
-	if blockInfo.CatchInfo() {
+	if blockInfo.UsefulInfo() {
 		log.Logger.Info("db operation duration",
 			zap.Uint64("block", blockResult.Height),
 			zap.Float64("duration", duration.Seconds()),
