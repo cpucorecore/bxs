@@ -10,7 +10,6 @@ import (
 	"bxs/service"
 	"bxs/types"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/panjf2000/ants/v2"
 	"github.com/shopspring/decimal"
@@ -139,7 +138,7 @@ func (p *blockParser) parseTxReceipt(pbc *types.ParseBlockContext, txReceipt *et
 	txResult := types.NewTxResult(txSender, pbc.HeightTime.Time)
 	pairs := make([]*types.Pair, 0, 2)
 	tokens := make([]*types.Token, 0, 2)
-	migratedPools := make([]common.Address, 0, 2)
+	migratedPools := make([]*types.MigratedPool, 0, 2)
 	for _, ethLog := range txReceipt.Logs {
 		if len(ethLog.Topics) == 0 {
 			continue
@@ -196,7 +195,10 @@ func (p *blockParser) parseTxReceipt(pbc *types.ParseBlockContext, txReceipt *et
 
 		if event.IsMigrated() {
 			p.cache.SetMigrateToken(event.GetPair().Token0Core.Address)
-			migratedPools = append(migratedPools, pairAddr)
+			migratedPools = append(migratedPools, &types.MigratedPool{
+				Pool:  event.GetPair().Address,
+				Token: event.GetPair().Token0Core.Address,
+			})
 		}
 
 		txResult.AddPoolUpdate(event.GetPoolUpdate())
@@ -278,6 +280,7 @@ func (p *blockParser) commitBlockResult(blockResult *types.BlockResult) {
 		}
 
 		for _, action := range blockInfo.Actions {
+			log.Logger.Sugar().Infof("add action: pair:%s, token:%s", action.Pair, action.Token)
 			if action.Pair == "" {
 				log.Logger.Warn("action pair is empty", zap.String("token", action.Token))
 				continue

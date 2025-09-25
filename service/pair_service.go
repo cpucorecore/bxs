@@ -239,7 +239,6 @@ func (s *pairService) doGetPair(pairAddress common.Address) *types.Pair {
 }
 
 func (s *pairService) verifyXLaunch(pair *types.Pair) bool {
-	log.Logger.Debug(pair.Address.String())
 	verified, err := s.contractCaller.CallGetLaunchByAddress(&chain_params.G.XLaunchFactoryAddress, &pair.Address)
 	if err != nil {
 		return false

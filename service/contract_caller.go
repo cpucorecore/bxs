@@ -5,7 +5,6 @@ import (
 	"bxs/abi/xlaunch"
 	"bxs/chain_params"
 	"bxs/config"
-	"bxs/log"
 	"bxs/metrics"
 	"bxs/types"
 	"context"
@@ -204,7 +203,6 @@ func (c *ContractCaller) CallGetPair(factoryAddress, token0Address, token1Addres
 }
 
 func (c *ContractCaller) CallGetLaunchByAddress(factoryAddress, tokenAddress *common.Address) (bool, error) {
-	log.Logger.Info(factoryAddress.String())
 	req := BuildCallContractReqDynamic(nil, factoryAddress, xlaunch.FactoryAbi, "getLaunchByAddress", tokenAddress)
 
 	bytes, err := c.CallContract(req)

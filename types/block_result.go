@@ -51,7 +51,7 @@ func mergePoolUpdates(poolUpdates []*PoolUpdate) []*PoolUpdate {
 func (br *BlockResult) GetKafkaMessage() *BlockInfo {
 	poolUpdates := make([]*PoolUpdate, 0, len(br.TxResults))
 	txs := make([]*orm.Tx, 0, len(br.TxResults))
-	migratedPools := make([]common.Address, 0, len(br.TxResults))
+	migratedPools := make([]*MigratedPool, 0, len(br.TxResults))
 	actions := make([]*orm.Action, 0, len(br.TxResults))
 	ormPairs := make([]*orm.Pair, 0, len(br.TxResults))
 	ormTokens := make([]*orm.Token, 0, len(br.TxResults))

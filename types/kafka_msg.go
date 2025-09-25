@@ -5,12 +5,17 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+type MigratedPool struct {
+	Pool  common.Address
+	Token common.Address
+}
+
 type BlockInfo struct {
 	Height           uint64
 	Timestamp        uint64
 	NativeTokenPrice string
 	Txs              []*orm.Tx
-	MigratedPools    []common.Address
+	MigratedPools    []*MigratedPool
 	Actions          []*orm.Action
 	NewTokens        []*orm.Token
 	NewPairs         []*orm.Pair

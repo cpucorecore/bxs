@@ -25,7 +25,7 @@ type TxResult struct {
 	PoolUpdates       []*PoolUpdate
 	Pairs             []*Pair
 	Tokens            []*Token
-	MigratedPools     []common.Address
+	MigratedPools     []*MigratedPool
 	Actions           []*orm.Action
 }
 
@@ -59,7 +59,7 @@ func (r *TxResult) SetTokens(tokens []*Token) {
 	r.Tokens = tokens
 }
 
-func (r *TxResult) SetMigratedPools(pools []common.Address) {
+func (r *TxResult) SetMigratedPools(pools []*MigratedPool) {
 	r.MigratedPools = pools
 }
 

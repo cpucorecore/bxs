@@ -28,13 +28,14 @@ func TestBuy(t *testing.T) {
 		Event:         types.Buy,
 		Token0Amount:  expectAmt0,
 		Token1Amount:  expectAmt1,
-		Token0Address: "0xFA4dA14E995408Fd456928F4a0512AC348de1794",
+		Token0Address: "0x27C3e2BD88e9C0fE5a99a1aCb0A0F3cd08363043",
 		Token1Address: types.ZeroAddress.String(),
-		Block:         65764034,
-		BlockIndex:    1,
-		TxIndex:       3,
+		Block:         66567463,
+		BlockIndex:    0,
+		TxIndex:       2,
 		PairAddress:   "0xCe32c1326450C7AC8D9698E65d3303efB4F211c0",
 		Program:       types.ProtocolNameXLaunch,
 	}
+	tx.Diff(expectTx)
 	require.True(t, tx.Equal(expectTx), "expect: %v, actual: %v", expectTx, tx)
 }
