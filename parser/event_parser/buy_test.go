@@ -10,9 +10,9 @@ import (
 )
 
 func TestBuy(t *testing.T) {
-	// https://testnet.bscscan.com/tx/0xd7b86b1409b41cae1ccd839f190939bd24bfd41071e459c3ff317ce23c818fe5#eventlog#3
+	// https://testnet.bscscan.com/tx/0xb93f156a59a1f9c92a0af06f430fa942a08392c46f126de104c24fd9d8fb75c9#eventlog#2
 	tc := service.GetTestContext()
-	ethLog := tc.GetEthLog("0xd7b86b1409b41cae1ccd839f190939bd24bfd41071e459c3ff317ce23c818fe5", 2)
+	ethLog := tc.GetEthLog("0xb93f156a59a1f9c92a0af06f430fa942a08392c46f126de104c24fd9d8fb75c9", 2)
 
 	event, pErr := Topic2EventParser[ethLog.Topics[0]].Parse(ethLog)
 	require.NoError(t, pErr)
@@ -21,10 +21,10 @@ func TestBuy(t *testing.T) {
 	event.SetPair(pairWrap.Pair)
 
 	tx := event.GetTx(service.MockNativeTokenPrice)
-	expectAmt0, _ := decimal.NewFromString("102795326.423086443244433004")
-	expectAmt1, _ := decimal.NewFromString("1.804950495049504950")
+	expectAmt0, _ := decimal.NewFromString("44711.015496156927491764")
+	expectAmt1, _ := decimal.NewFromString("0.004573267326732715")
 	expectTx := &orm.Tx{
-		TxHash:        "0xd7b86b1409b41cae1ccd839f190939bd24bfd41071e459c3ff317ce23c818fe5",
+		TxHash:        "0xb93f156a59a1f9c92a0af06f430fa942a08392c46f126de104c24fd9d8fb75c9",
 		Event:         types.Buy,
 		Token0Amount:  expectAmt0,
 		Token1Amount:  expectAmt1,
@@ -33,7 +33,7 @@ func TestBuy(t *testing.T) {
 		Block:         65764034,
 		BlockIndex:    1,
 		TxIndex:       3,
-		PairAddress:   "0x87485818145cEC5017a6466AAD2Ef5FEeA99aaae",
+		PairAddress:   "0xCe32c1326450C7AC8D9698E65d3303efB4F211c0",
 		Program:       types.ProtocolNameXLaunch,
 	}
 	require.True(t, tx.Equal(expectTx), "expect: %v, actual: %v", expectTx, tx)

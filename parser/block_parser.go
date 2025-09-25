@@ -178,6 +178,12 @@ func (p *blockParser) parseTxReceipt(pbc *types.ParseBlockContext, txReceipt *et
 			if pair == nil {
 				log.Logger.Sugar().Fatalf("get pair %s fail", pairAddr)
 			}
+
+			if pair.Filtered {
+				log.Logger.Sugar().Warnf("pair %s is filtered, filter code %d", pairAddr, pair.FilterCode)
+				continue
+			}
+
 			pairs = append(pairs, pair)
 			tokens = append(tokens, &types.Token{
 				Address:  pair.Token0.Address,
@@ -269,6 +275,23 @@ func (p *blockParser) commitBlockResult(blockResult *types.BlockResult) {
 		err = p.dbService.AddActions(blockInfo.Actions)
 		if err != nil {
 			log.Logger.Fatal("add actions err", zap.Any("height", blockInfo.Height), zap.Error(err))
+		}
+
+		for _, action := range blockInfo.Actions {
+			if action.Pair == "" {
+				log.Logger.Warn("action pair is empty", zap.String("token", action.Token))
+				continue
+			}
+
+			for {
+				err = p.dbService.UpdateToken(action.Token, action.Pair)
+				if err != nil {
+					log.Logger.Error("update token main pair err", zap.Error(err), zap.String("token", action.Token), zap.String("pair", action.Pair))
+					time.Sleep(time.Millisecond * 100)
+					continue
+				}
+				break
+			}
 		}
 	}
 

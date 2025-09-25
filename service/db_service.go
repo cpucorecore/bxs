@@ -10,6 +10,7 @@ type DBService interface {
 	AddPairs(pairs []*orm.Pair) error
 	AddTxs(txs []*orm.Tx) error
 	AddActions(actions []*orm.Action) error
+	UpdateToken(tokenAddress, mainPairAddress string) error
 }
 
 type dbService struct {
@@ -47,6 +48,10 @@ func (s *dbService) AddTxs(txs []*orm.Tx) error {
 
 func (s *dbService) AddActions(actions []*orm.Action) error {
 	return s.actionRepository.CreateBatch(actions)
+}
+
+func (s *dbService) UpdateToken(tokenAddress, mainPairAddress string) error {
+	return s.tokenRepository.UpdateMainPair(tokenAddress, mainPairAddress)
 }
 
 func NewDBService(
