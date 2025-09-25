@@ -38,8 +38,8 @@ func (e *BuyEvent) GetTx(nativeTokenPrice decimal.Decimal) *orm.Tx {
 		Program:       types.ProtocolNameXLaunch,
 	}
 
-	tx.Token0Amount, tx.Token1Amount = ParseAmountsByPair(e.TokenAmount, e.NativeTokenAmount, e.Pair)
-	tx.AmountUsd, tx.PriceUsd = CalcAmountAndPrice(nativeTokenPrice, tx.Token0Amount, tx.Token1Amount, e.Pair.Token1Core.Address)
+	tx.Token0Amount, tx.Token1Amount = types.ParseAmountsByPair(e.TokenAmount, e.NativeTokenAmount, e.Pair)
+	tx.AmountUsd, tx.PriceUsd = types.CalcAmountAndPrice(nativeTokenPrice, tx.Token0Amount, tx.Token1Amount, e.Pair.Token1Core.Address)
 	return tx
 }
 
@@ -54,7 +54,7 @@ func (e *BuyEvent) GetPoolUpdate() *types.PoolUpdate {
 		Token0:   e.EventCommon.Pair.Token0Core.Address,
 		Token1:   e.EventCommon.Pair.Token1Core.Address,
 	}
-	u.Amount0, u.Amount1 = ParseAmountsByPair(e.TokensSold, e.NativeTokenRaised, e.Pair)
+	u.Amount0, u.Amount1 = types.ParseAmountsByPair(e.TokensSold, e.NativeTokenRaised, e.Pair)
 	return u
 }
 
@@ -72,6 +72,6 @@ func (e *BuyEvent) GetAction() *orm.Action {
 		Block:   e.BlockNumber,
 		BlockAt: e.BlockTime,
 	}
-	action.Token0Amount, action.Token1Amount = ParseAmountsByPair(e.TokenAmount, e.NativeTokenAmount, e.Pair)
+	action.Token0Amount, action.Token1Amount = types.ParseAmountsByPair(e.TokenAmount, e.NativeTokenAmount, e.Pair)
 	return action
 }

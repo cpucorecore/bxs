@@ -1,13 +1,12 @@
-package event
+package types
 
 import (
-	"bxs/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/shopspring/decimal"
 	"math/big"
 )
 
-func ParseAmountsByPair(token0AmountWei, token1AmountWei *big.Int, pair *types.Pair) (token0Amount, token1Amount decimal.Decimal) {
+func ParseAmountsByPair(token0AmountWei, token1AmountWei *big.Int, pair *Pair) (token0Amount, token1Amount decimal.Decimal) {
 	if !pair.TokensReversed {
 		token0Amount = decimal.NewFromBigInt(token0AmountWei, -(int32)(pair.Token0Core.Decimals))
 		token1Amount = decimal.NewFromBigInt(token1AmountWei, -(int32)(pair.Token1Core.Decimals))
@@ -23,7 +22,7 @@ func CalcAmountAndPrice(
 	token0Amount, token1Amount decimal.Decimal,
 	token1Address common.Address,
 ) (amountUSD, priceUSD decimal.Decimal) {
-	if types.IsNativeToken(token1Address) {
+	if IsNativeToken(token1Address) {
 		amountUSD = token1Amount.Mul(bnbPrice)
 		if !token0Amount.IsZero() {
 			priceUSD = amountUSD.Div(token0Amount)

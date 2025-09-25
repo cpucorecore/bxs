@@ -37,8 +37,8 @@ func (e *SellEvent) GetTx(nativeTokenPrice decimal.Decimal) *orm.Tx {
 		Program:       types.ProtocolNameXLaunch,
 	}
 
-	tx.Token0Amount, tx.Token1Amount = ParseAmountsByPair(e.TokenAmount, e.NativeTokenAmount, e.Pair)
-	tx.AmountUsd, tx.PriceUsd = CalcAmountAndPrice(nativeTokenPrice, tx.Token0Amount, tx.Token1Amount, e.Pair.Token1Core.Address)
+	tx.Token0Amount, tx.Token1Amount = types.ParseAmountsByPair(e.TokenAmount, e.NativeTokenAmount, e.Pair)
+	tx.AmountUsd, tx.PriceUsd = types.CalcAmountAndPrice(nativeTokenPrice, tx.Token0Amount, tx.Token1Amount, e.Pair.Token1Core.Address)
 	return tx
 }
 
@@ -47,7 +47,7 @@ func (e *SellEvent) CanGetPoolUpdate() bool {
 }
 
 func (e *SellEvent) GetPoolUpdate() *types.PoolUpdate {
-	a0, a1 := ParseAmountsByPair(e.TokensSold, e.NativeTokenRaised, e.Pair)
+	a0, a1 := types.ParseAmountsByPair(e.TokensSold, e.NativeTokenRaised, e.Pair)
 	return &types.PoolUpdate{
 		LogIndex: e.EventCommon.LogIndex,
 		Address:  e.EventCommon.Pair.Address,

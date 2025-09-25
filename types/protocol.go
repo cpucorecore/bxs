@@ -1,9 +1,11 @@
 package types
 
 const (
-	ProtocolIdXLaunch = iota + 10
+	ProtocolIdXLaunch = iota + 1
+	ProtocolIdPancakeV2
 )
 
 const (
-	ProtocolNameXLaunch = "XLaunch"
+	ProtocolNameXLaunch   = "XLaunch"
+	ProtocolNamePancakeV2 = "PancakeV2"
 )

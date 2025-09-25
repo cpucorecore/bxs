@@ -164,6 +164,7 @@ func (p *blockParser) parseTxReceipt(pbc *types.ParseBlockContext, txReceipt *et
 
 		if event.IsPairCreated() {
 			txResult.AddPairCreatedEvent(event)
+			pairs = append(pairs, event.GetPair())
 			continue
 		}
 

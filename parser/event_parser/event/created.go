@@ -69,7 +69,7 @@ func (e *CreatedEvent) DoGetPair() *types.Pair {
 		ProtocolId: types.ProtocolIdXLaunch,
 	}
 
-	pair.Token0InitAmount, pair.Token1InitAmount = ParseAmountsByPair(e.TokenInitAmount, e.BaseTokenInitAmount, pair)
+	pair.Token0InitAmount, pair.Token1InitAmount = types.ParseAmountsByPair(e.TokenInitAmount, e.BaseTokenInitAmount, pair)
 	pair.Token0 = e.DoGetToken0()
 	e.Pair = pair
 	return e.Pair
@@ -113,6 +113,6 @@ func (e *CreatedEvent) GetPoolUpdate() *types.PoolUpdate {
 		Token0:   e.EventCommon.Pair.Token0Core.Address,
 		Token1:   e.EventCommon.Pair.Token1Core.Address,
 	}
-	u.Amount0, u.Amount1 = ParseAmountsByPair(e.TokenInitAmount, e.BaseTokenInitAmount, e.Pair)
+	u.Amount0, u.Amount1 = types.ParseAmountsByPair(e.TokenInitAmount, e.BaseTokenInitAmount, e.Pair)
 	return u
 }
