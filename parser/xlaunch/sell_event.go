@@ -1,4 +1,4 @@
-package event
+package event_parser
 
 import (
 	"bxs/repository/orm"
@@ -56,4 +56,8 @@ func (e *SellEvent) GetPoolUpdate() *types.PoolUpdate {
 		Amount0:  a0,
 		Amount1:  a1,
 	}
+}
+
+func (e *SellEvent) IsBuyOrSell() bool {
+	return true
 }

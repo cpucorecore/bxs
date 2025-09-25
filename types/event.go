@@ -8,6 +8,7 @@ import (
 )
 
 type Event interface {
+	GetTxHash() common.Hash
 	GetPairAddress() common.Address
 	GetPair() *Pair
 	SetPair(pair *Pair)
@@ -27,4 +28,9 @@ type Event interface {
 
 	IsPairCreated() bool
 	GetNonWBNBToken() common.Address
+
+	IsBuyOrSell() bool
+	IsSwap() bool
+	IsTokenReverse() bool
+	IsSync() bool
 }

@@ -12,11 +12,9 @@ import (
 
 const (
 	FilterCodeGetToken = iota + 1
-	FilterCodeGetToken1
 	FilterCodeVerifyFailed
 	FilterCodeNoBaseToken
-	FilterCodeWrongFactory
-	FilterCodeUnpackDataErr
+	FilterCodeNoXLaunchToken
 )
 
 type TokenCore struct {
@@ -69,7 +67,7 @@ func (t *TokenCore) Equal(token *TokenCore) bool {
 
 type Pair struct {
 	Address          common.Address `json:"-"`
-	TokensReversed   bool
+	TokenReversed    bool
 	Token0Core       *TokenCore
 	Token1Core       *TokenCore
 	Token0           *Token `json:"-"`
@@ -118,14 +116,14 @@ func (p *Pair) UnmarshalBinary(data []byte) error {
 func (p *Pair) swapToken0Token1() {
 	p.Token0Core, p.Token1Core = p.Token1Core, p.Token0Core
 	p.Token0, p.Token1 = p.Token1, p.Token0
-	p.TokensReversed = true
+	p.TokenReversed = true
 }
 
 func (p *Pair) Equal(pair *Pair) bool {
 	if !IsSameAddress(p.Address, pair.Address) {
 		return false
 	}
-	if p.TokensReversed != pair.TokensReversed {
+	if p.TokenReversed != pair.TokenReversed {
 		return false
 	}
 	if !p.Token0Core.Equal(pair.Token0Core) {

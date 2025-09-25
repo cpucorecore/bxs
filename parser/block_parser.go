@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bxs/cache"
+	"bxs/chain_params"
 	"bxs/config"
 	"bxs/log"
 	"bxs/metrics"
@@ -204,6 +205,152 @@ func (p *blockParser) parseTxReceipt(pbc *types.ParseBlockContext, txReceipt *et
 
 		txResult.AddPoolUpdate(event.GetPoolUpdate())
 		txResult.AddSwapEvent(event)
+	}
+
+	txResult.SetPairs(pairs)
+	txResult.SetTokens(tokens)
+	txResult.SetMigratedPools(migratedPools)
+
+	p.processTxPairCreatedEvents(txResult)
+	return txResult
+}
+
+func (p *blockParser) parseTxReceipt2(pbc *types.ParseBlockContext, txReceipt *ethtypes.Receipt) *types.TxResult {
+	txSender, err := pbc.GetTxSender(txReceipt.TransactionIndex)
+	if err != nil {
+		log.Logger.Fatal("Err: get tx sender err",
+			zap.Error(err),
+			zap.Any("pbc", pbc),
+			zap.Any("txReceipt", txReceipt),
+		)
+	}
+
+	txResult := types.NewTxResult(txSender, pbc.HeightTime.Time)
+	pairs := make([]*types.Pair, 0, 2)
+	tokens := make([]*types.Token, 0, 2)
+	migratedPools := make([]*types.MigratedPool, 0, 2)
+	for _, ethLog := range txReceipt.Logs {
+		if len(ethLog.Topics) == 0 {
+			continue
+		}
+
+		event, parseErr := p.topicRouter.Parse(ethLog)
+		if parseErr != nil {
+			continue
+		}
+
+		if event.IsCreated() {
+			// xlaunch
+			// save token
+			// save pair
+			// pool update
+			event.SetBlockTime(pbc.HeightTime.Time)
+
+			pair := event.GetPair()
+			token0 := event.GetToken0()
+			p.cache.SetPair(pair)
+			p.cache.SetToken(token0)
+			pairs = append(pairs, pair)
+			tokens = append(tokens, token0)
+			txResult.AddPoolUpdate(event.GetPoolUpdate())
+			continue
+		}
+
+		if event.IsPairCreated() {
+			// pancakev2
+			// get pair
+			// if filtered: continue
+
+			// query token cache(pair.token0)
+			// if token not exist, pair filtered, and update pair cache, continue
+
+			pair := event.GetPair()
+			token0, ok := p.cache.GetToken(pair.Token0Core.Address)
+			if !ok {
+				log.Logger.Sugar().Infof("pair %s have no xlaunch token, ignore it, token0 %s", pair.Address, pair.Token0Core.Address)
+				pair.Filtered = true
+				pair.FilterCode = types.FilterCodeNoXLaunchToken
+			} else {
+				pair.Token0Core = &types.TokenCore{
+					Address:  token0.Address,
+					Symbol:   token0.Symbol,
+					Decimals: token0.Decimals,
+				}
+				pair.Token1Core = &types.TokenCore{
+					Address:  chain_params.G.WBNBAddress,
+					Symbol:   "WBNB",
+					Decimals: 18,
+				}
+				txResult.AddPairCreatedEvent(event)
+				pairs = append(pairs, pair)
+			}
+
+			p.cache.SetPair(pair)
+			continue
+		}
+
+		// xlaunch buy/sell
+		if event.IsBuyOrSell() {
+			pairAddr := event.GetPairAddress()
+			pair, ok := p.cache.GetPair(pairAddr)
+			if !ok {
+				log.Logger.Sugar().Warnf("pool %s not cached, it should be", pairAddr)
+				pw := p.pairService.GetPair(pairAddr)
+				pair = pw.Pair
+				if pair == nil {
+					log.Logger.Sugar().Fatalf("get pair %s fail", pairAddr)
+				}
+
+				if pair.Filtered {
+					log.Logger.Sugar().Warnf("pair %s is filtered, filter code %d", pairAddr, pair.FilterCode)
+					continue
+				}
+
+				pairs = append(pairs, pair)
+				tokens = append(tokens, &types.Token{
+					Address:  pair.Token0.Address,
+					Symbol:   pair.Token0.Symbol,
+					Decimals: pair.Token0.Decimals,
+					Program:  types.ProtocolNameXLaunch,
+				})
+			}
+			event.SetPair(pair)
+
+			if event.IsMigrated() {
+				p.cache.SetMigrateToken(event.GetPair().Token0Core.Address)
+				migratedPools = append(migratedPools, &types.MigratedPool{
+					Pool:  event.GetPair().Address,
+					Token: event.GetPair().Token0Core.Address,
+				})
+			}
+
+			txResult.AddPoolUpdate(event.GetPoolUpdate())
+			txResult.AddSwapEvent(event)
+		} else if event.IsSwap() {
+			pair, ok := p.cache.GetPair(event.GetPairAddress())
+			if !ok {
+				log.Logger.Sugar().Warnf("pair %s not cached, ignore it, tx hash %s", event.GetPairAddress(), event.GetTxHash())
+			}
+
+			if pair.Filtered {
+				log.Logger.Sugar().Infof("pair %s is filtered, filter code %d, tx hash %s", event.GetPairAddress(), pair.FilterCode, event.GetTxHash())
+			}
+
+			event.SetPair(pair)
+			txResult.AddSwapEvent(event)
+		} else if event.IsSync() {
+			pair, ok := p.cache.GetPair(event.GetPairAddress())
+			if !ok {
+				log.Logger.Sugar().Warnf("pair %s not cached, ignore it, tx hash %s", event.GetPairAddress(), event.GetTxHash())
+			}
+
+			if pair.Filtered {
+				log.Logger.Sugar().Infof("pair %s is filtered, filter code %d, tx hash %s", event.GetPairAddress(), pair.FilterCode, event.GetTxHash())
+			}
+
+			event.SetPair(pair)
+			txResult.AddPoolUpdate(event.GetPoolUpdate())
+		}
 	}
 
 	txResult.SetPairs(pairs)

@@ -16,7 +16,7 @@ func TestCreated(t *testing.T) {
 	ethLog := tc.GetEthLog("0x6144c88e93d9e8f055cd0abff16e1be204482096ffe9f64e1e30fa2154003ed9", 5)
 	blockTimestamp := tc.GetBlockTimestamp(ethLog.BlockNumber)
 
-	event, pErr := Topic2EventParser[ethLog.Topics[0]].Parse(ethLog)
+	event, pErr := topic2EventParser[ethLog.Topics[0]].Parse(ethLog)
 	require.NoError(t, pErr)
 
 	event.SetBlockTime(time.Unix(int64(blockTimestamp), 0))
@@ -29,8 +29,8 @@ func TestCreated(t *testing.T) {
 	token1InitAmount, err := decimal.NewFromString("6.933333333333333333")
 	require.NoError(t, err)
 	expectPair := &types.Pair{
-		Address:        common.HexToAddress("0x87485818145cEC5017a6466AAD2Ef5FEeA99aaae"),
-		TokensReversed: false,
+		Address:       common.HexToAddress("0x87485818145cEC5017a6466AAD2Ef5FEeA99aaae"),
+		TokenReversed: false,
 		Token0Core: &types.TokenCore{
 			Address:  common.HexToAddress("0xFA4dA14E995408Fd456928F4a0512AC348de1794"),
 			Symbol:   "T",
@@ -41,7 +41,7 @@ func TestCreated(t *testing.T) {
 		Token1InitAmount: token1InitAmount,
 		Block:            65762817,
 		BlockAt:          time.Unix(int64(blockTimestamp), 0),
-		ProtocolId:       types.ProtocolIdXLaunch,
+		ProtocolId:       protocolId,
 		Filtered:         false,
 		FilterCode:       0,
 	}

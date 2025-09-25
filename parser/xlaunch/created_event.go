@@ -1,4 +1,4 @@
-package event
+package event_parser
 
 import (
 	"bxs/types"
@@ -66,7 +66,7 @@ func (e *CreatedEvent) DoGetPair() *types.Pair {
 		Token1Core: types.NativeTokenCore,
 		Block:      e.BlockNumber,
 		BlockAt:    e.BlockTime,
-		ProtocolId: types.ProtocolIdXLaunch,
+		ProtocolId: protocolId,
 	}
 
 	pair.Token0InitAmount, pair.Token1InitAmount = types.ParseAmountsByPair(e.TokenInitAmount, e.BaseTokenInitAmount, pair)
@@ -88,7 +88,7 @@ func (e *CreatedEvent) DoGetToken0() *types.Token {
 		Decimals:    types.Decimals18,
 		BlockNumber: e.BlockNumber,
 		BlockTime:   e.BlockTime,
-		Program:     types.ProtocolNameXLaunch,
+		Program:     protocolName,
 		Filtered:    false,
 		URL:         e.URL,
 		Description: e.Description,

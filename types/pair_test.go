@@ -44,7 +44,7 @@ func TestPair_MarshalBinary(t *testing.T) {
 
 	pair := &Pair{
 		Address:          address,
-		TokensReversed:   false,
+		TokenReversed:    false,
 		Token0Core:       tokenBasic,
 		Token1Core:       tokenBasic,
 		Token0:           token,

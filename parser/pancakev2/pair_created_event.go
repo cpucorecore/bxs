@@ -1,4 +1,4 @@
-package event
+package event_parser
 
 import (
 	"bxs/repository/orm"
@@ -12,9 +12,10 @@ const (
 
 type PairCreatedEvent struct {
 	*types.EventCommon
-	Token0Addr common.Address
-	Token1Addr common.Address
-	PairAddr   common.Address
+	Token0Addr    common.Address
+	Token1Addr    common.Address
+	PairAddr      common.Address
+	tokenReversed bool
 }
 
 func (e *PairCreatedEvent) IsWBNBPair() bool {
@@ -46,4 +47,8 @@ func (e *PairCreatedEvent) GetAction() *orm.Action {
 		Token0Amount: types.ZeroDecimal, // TODO fixme
 		Token1Amount: types.ZeroDecimal, // TODO fixme
 	}
+}
+
+func (e *PairCreatedEvent) IsTokenReverse() bool {
+	return e.tokenReversed
 }

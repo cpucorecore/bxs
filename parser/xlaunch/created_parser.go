@@ -2,7 +2,7 @@ package event_parser
 
 import (
 	"bxs/chain_params"
-	"bxs/parser/event_parser/event"
+	pcommon "bxs/parser/common"
 	"bxs/types"
 	"errors"
 	"github.com/ethereum/go-ethereum/common"
@@ -15,7 +15,7 @@ var (
 )
 
 type CreatedEventParser struct {
-	TopicUnpacker
+	pcommon.TopicUnpacker
 }
 
 func (o *CreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
@@ -23,12 +23,12 @@ func (o *CreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
 		return nil, ErrWrongFactoryAddress
 	}
 
-	eventInput, err := o.unpacker.Unpack(ethLog)
+	eventInput, err := o.Unpacker.Unpack(ethLog)
 	if err != nil {
 		return nil, err
 	}
 
-	createdEvent := &event.CreatedEvent{
+	createdEvent := &CreatedEvent{
 		EventCommon:         types.EventCommonFromEthLog(ethLog),
 		PoolAddress:         common.BytesToAddress(ethLog.Topics[1].Bytes()[12:]),
 		Creator:             common.BytesToAddress(ethLog.Topics[2].Bytes()[12:]),

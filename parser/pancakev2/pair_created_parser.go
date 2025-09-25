@@ -2,7 +2,7 @@ package event_parser
 
 import (
 	"bxs/chain_params"
-	"bxs/parser/event_parser/event"
+	pcommon "bxs/parser/common"
 	"bxs/types"
 	"errors"
 	"github.com/ethereum/go-ethereum/common"
@@ -15,7 +15,7 @@ var (
 )
 
 type PairCreatedEventParser struct {
-	TopicUnpacker
+	pcommon.TopicUnpacker
 }
 
 func (o *PairCreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
@@ -23,21 +23,36 @@ func (o *PairCreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error
 		return nil, ErrWrongFactory
 	}
 
-	eventInput, err := o.unpacker.Unpack(ethLog)
+	eventInput, err := o.Unpacker.Unpack(ethLog)
 	if err != nil {
 		return nil, err
 	}
 
-	pairCreatedEvent := &event.PairCreatedEvent{
+	e := &PairCreatedEvent{
 		EventCommon: types.EventCommonFromEthLog(ethLog),
 		Token0Addr:  common.BytesToAddress(ethLog.Topics[1].Bytes()[12:]),
 		Token1Addr:  common.BytesToAddress(ethLog.Topics[2].Bytes()[12:]),
 		PairAddr:    eventInput[0].(common.Address),
 	}
 
-	if !pairCreatedEvent.IsWBNBPair() {
+	if !e.IsWBNBPair() {
 		return nil, ErrNotWBNBPair
 	}
 
-	return pairCreatedEvent, nil
+	e.Token0Addr, e.Token1Addr, e.tokenReversed = types.OrderToken0Token1Address(e.Token0Addr, e.Token1Addr)
+	e.Pair = &types.Pair{
+		Address:       e.PairAddr,
+		TokenReversed: e.tokenReversed,
+		Token0Core: &types.TokenCore{
+			Address: e.Token0Addr,
+		},
+		Token1Core: &types.TokenCore{
+			Address: e.Token1Addr,
+		},
+		Block:      e.BlockNumber,
+		BlockAt:    e.BlockTime,
+		ProtocolId: protocolId,
+	}
+
+	return e, nil
 }

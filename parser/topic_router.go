@@ -1,7 +1,9 @@
 package parser
 
 import (
-	"bxs/parser/event_parser"
+	pcommon "bxs/parser/common"
+	ppancakev2 "bxs/parser/pancakev2"
+	pxlaunch "bxs/parser/xlaunch"
 	"bxs/types"
 	"errors"
 	"github.com/ethereum/go-ethereum/common"
@@ -17,13 +19,18 @@ type TopicRouter interface {
 }
 
 type topicRouter struct {
-	topic2EventParser map[common.Hash]event_parser.EventParser
+	topic2EventParser map[common.Hash]pcommon.EventParser
 }
 
 func NewTopicRouter() TopicRouter {
-	return &topicRouter{
-		topic2EventParser: event_parser.Topic2EventParser,
+	r := &topicRouter{
+		topic2EventParser: make(map[common.Hash]pcommon.EventParser),
 	}
+
+	ppancakev2.Reg(r)
+	pxlaunch.Reg(r)
+
+	return r
 }
 
 func (p *topicRouter) Parse(ethLog *ethtypes.Log) (types.Event, error) {
@@ -33,4 +40,8 @@ func (p *topicRouter) Parse(ethLog *ethtypes.Log) (types.Event, error) {
 	}
 
 	return eventParser.Parse(ethLog)
+}
+
+func (p *topicRouter) Register(commonHash common.Hash, eventParser pcommon.EventParser) {
+	p.topic2EventParser[commonHash] = eventParser
 }

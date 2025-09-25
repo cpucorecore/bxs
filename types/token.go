@@ -32,6 +32,13 @@ func IsWBNB(address common.Address) bool {
 	return IsSameAddress(address, chain_params.G.WBNBAddress)
 }
 
+func OrderToken0Token1Address(t0a, t1a common.Address) (common.Address, common.Address, bool) {
+	if IsSameAddress(t1a, chain_params.G.WBNBAddress) {
+		return t0a, t1a, false
+	}
+	return t1a, t0a, true
+}
+
 func IsNativeToken(address common.Address) bool {
 	return IsSameAddress(address, ZeroAddress)
 }

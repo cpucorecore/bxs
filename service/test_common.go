@@ -24,8 +24,8 @@ type TestPair struct {
 
 func (tp *TestPair) GetPairWithoutTokenInfo() *types.Pair {
 	pair := &types.Pair{
-		Address:        tp.address,
-		TokensReversed: tp.tokenReversed,
+		Address:       tp.address,
+		TokenReversed: tp.tokenReversed,
 		Token0Core: &types.TokenCore{
 			Address: tp.token0.address,
 		},
@@ -39,8 +39,8 @@ func (tp *TestPair) GetPairWithoutTokenInfo() *types.Pair {
 
 func (tp *TestPair) GetExpectedPair() *types.Pair {
 	pair := &types.Pair{
-		Address:        tp.address,
-		TokensReversed: tp.tokenReversed,
+		Address:       tp.address,
+		TokenReversed: tp.tokenReversed,
 		Token0Core: &types.TokenCore{
 			Address:  tp.token0.address,
 			Symbol:   tp.token0.symbol,

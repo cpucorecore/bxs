@@ -14,7 +14,7 @@ func TestSell(t *testing.T) {
 	tc := service.GetTestContext()
 	ethLog := tc.GetEthLog("0x7cb0894568573d4bd590f185fa166fb73f64bbb827b362c0017de6473ad2849e", 2)
 
-	event, pErr := Topic2EventParser[ethLog.Topics[0]].Parse(ethLog)
+	event, pErr := topic2EventParser[ethLog.Topics[0]].Parse(ethLog)
 	require.NoError(t, pErr)
 
 	pairWrap := tc.PairService.GetPair(event.GetPairAddress())

@@ -1,4 +1,4 @@
-package event
+package event_parser
 
 import (
 	"bxs/repository/orm"
@@ -35,7 +35,7 @@ func (e *BuyEvent) GetTx(nativeTokenPrice decimal.Decimal) *orm.Tx {
 		BlockIndex:    e.TxIndex,
 		TxIndex:       e.LogIndex,
 		PairAddress:   e.Pair.Address.String(),
-		Program:       types.ProtocolNameXLaunch,
+		Program:       protocolName,
 	}
 
 	tx.Token0Amount, tx.Token1Amount = types.ParseAmountsByPair(e.TokenAmount, e.NativeTokenAmount, e.Pair)
@@ -74,4 +74,8 @@ func (e *BuyEvent) GetAction() *orm.Action {
 	}
 	action.Token0Amount, action.Token1Amount = types.ParseAmountsByPair(e.TokenAmount, e.NativeTokenAmount, e.Pair)
 	return action
+}
+
+func (e *BuyEvent) IsBuyOrSell() bool {
+	return true
 }

@@ -7,7 +7,7 @@ import (
 )
 
 func ParseAmountsByPair(token0AmountWei, token1AmountWei *big.Int, pair *Pair) (token0Amount, token1Amount decimal.Decimal) {
-	if !pair.TokensReversed {
+	if !pair.TokenReversed {
 		token0Amount = decimal.NewFromBigInt(token0AmountWei, -(int32)(pair.Token0Core.Decimals))
 		token1Amount = decimal.NewFromBigInt(token1AmountWei, -(int32)(pair.Token1Core.Decimals))
 	} else {

@@ -14,7 +14,7 @@ func TestBuy(t *testing.T) {
 	tc := service.GetTestContext()
 	ethLog := tc.GetEthLog("0xb93f156a59a1f9c92a0af06f430fa942a08392c46f126de104c24fd9d8fb75c9", 2)
 
-	event, pErr := Topic2EventParser[ethLog.Topics[0]].Parse(ethLog)
+	event, pErr := topic2EventParser[ethLog.Topics[0]].Parse(ethLog)
 	require.NoError(t, pErr)
 
 	pairWrap := tc.PairService.GetPair(event.GetPairAddress())
@@ -34,7 +34,7 @@ func TestBuy(t *testing.T) {
 		BlockIndex:    0,
 		TxIndex:       2,
 		PairAddress:   "0xCe32c1326450C7AC8D9698E65d3303efB4F211c0",
-		Program:       types.ProtocolNameXLaunch,
+		Program:       protocolName,
 	}
 	tx.Diff(expectTx)
 	require.True(t, tx.Equal(expectTx), "expect: %v, actual: %v", expectTx, tx)

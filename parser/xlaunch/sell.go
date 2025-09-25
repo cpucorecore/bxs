@@ -1,7 +1,7 @@
 package event_parser
 
 import (
-	"bxs/parser/event_parser/event"
+	pcommon "bxs/parser/common"
 	"bxs/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
@@ -9,16 +9,16 @@ import (
 )
 
 type SellEventParser struct {
-	TopicUnpacker
+	pcommon.TopicUnpacker
 }
 
 func (o *SellEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
-	eventInput, err := o.unpacker.Unpack(ethLog)
+	eventInput, err := o.Unpacker.Unpack(ethLog)
 	if err != nil {
 		return nil, err
 	}
 
-	e := &event.SellEvent{
+	e := &SellEvent{
 		EventCommon:       types.EventCommonFromEthLog(ethLog),
 		Seller:            common.BytesToAddress(ethLog.Topics[1].Bytes()[12:]),
 		NativeTokenAmount: eventInput[0].(*big.Int),

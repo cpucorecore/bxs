@@ -21,6 +21,10 @@ type EventCommon struct {
 
 var _ Event = &EventCommon{}
 
+func (e *EventCommon) GetTxHash() common.Hash {
+	return e.TxHash
+}
+
 func (e *EventCommon) GetPairAddress() common.Address {
 	return e.ContractAddress
 }
@@ -78,6 +82,22 @@ func (e *EventCommon) GetNonWBNBToken() common.Address {
 }
 
 func (e *EventCommon) IsPairCreated() bool {
+	return false
+}
+
+func (e *EventCommon) IsBuyOrSell() bool {
+	return false
+}
+
+func (e *EventCommon) IsSwap() bool {
+	return false
+}
+
+func (e *EventCommon) IsTokenReverse() bool {
+	return false
+}
+
+func (e *EventCommon) IsSync() bool {
 	return false
 }
 
