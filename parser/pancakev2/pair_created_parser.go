@@ -30,28 +30,27 @@ func (o *PairCreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error
 
 	e := &PairCreatedEvent{
 		EventCommon: types.EventCommonFromEthLog(ethLog),
-		Token0Addr:  common.BytesToAddress(ethLog.Topics[1].Bytes()[12:]),
-		Token1Addr:  common.BytesToAddress(ethLog.Topics[2].Bytes()[12:]),
-		PairAddr:    eventInput[0].(common.Address),
+		Address:     eventInput[0].(common.Address),
+		Token0:      common.BytesToAddress(ethLog.Topics[1].Bytes()[12:]),
+		Token1:      common.BytesToAddress(ethLog.Topics[2].Bytes()[12:]),
 	}
 
 	if !e.IsWBNBPair() {
 		return nil, ErrNotWBNBPair
 	}
 
-	e.Token0Addr, e.Token1Addr, e.tokenReversed = types.OrderToken0Token1Address(e.Token0Addr, e.Token1Addr)
+	e.Token0, e.Token1, e.tokenReversed = types.OrderToken0Token1Address(e.Token0, e.Token1)
 	e.Pair = &types.Pair{
-		Address:       e.PairAddr,
-		TokenReversed: e.tokenReversed,
+		Address: e.Address,
 		Token0: &types.TokenTinyInfo{
-			Address: e.Token0Addr,
+			Address: e.Token0,
 		},
 		Token1: &types.TokenTinyInfo{
-			Address: e.Token1Addr,
+			Address: e.Token1,
 		},
-		Block:      e.BlockNumber,
-		BlockAt:    e.BlockTime,
-		ProtocolId: protocolId,
+		TokenReversed: e.tokenReversed,
+		Block:         e.BlockNumber,
+		ProtocolId:    protocolId,
 	}
 
 	return e, nil

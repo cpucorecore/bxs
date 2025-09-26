@@ -12,21 +12,21 @@ const (
 
 type PairCreatedEvent struct {
 	*types.EventCommon
-	Token0Addr    common.Address
-	Token1Addr    common.Address
-	PairAddr      common.Address
+	Address       common.Address
+	Token0        common.Address
+	Token1        common.Address
 	tokenReversed bool
 }
 
 func (e *PairCreatedEvent) IsWBNBPair() bool {
-	return types.IsWBNB(e.Token0Addr) || types.IsWBNB(e.Token1Addr)
+	return types.IsWBNB(e.Token0) || types.IsWBNB(e.Token1)
 }
 
 func (e *PairCreatedEvent) GetNonWBNBToken() common.Address {
-	if types.IsWBNB(e.Token0Addr) {
-		return e.Token1Addr
+	if types.IsWBNB(e.Token0) {
+		return e.Token1
 	} else {
-		return e.Token0Addr
+		return e.Token0
 	}
 }
 
@@ -38,7 +38,7 @@ func (e *PairCreatedEvent) GetAction() *orm.Action {
 	return &orm.Action{
 		Maker:        e.Maker.String(),
 		Token:        e.GetNonWBNBToken().String(),
-		Pair:         e.PairAddr.String(),
+		Pair:         e.Address.String(),
 		Action:       action,
 		TxHash:       e.TxHash.String(),
 		Creator:      e.Maker.String(),

@@ -29,9 +29,9 @@ func (t *TokenTinyInfo) IsBaseToken() bool {
 
 type Pair struct {
 	Address       common.Address
-	TokenReversed bool
 	Token0        *TokenTinyInfo
 	Token1        *TokenTinyInfo
+	TokenReversed bool
 	InitAmount0   decimal.Decimal
 	InitAmount1   decimal.Decimal
 	Block         uint64
