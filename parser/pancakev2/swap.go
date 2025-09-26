@@ -21,7 +21,7 @@ func (e *SwapEvent) CanGetTx() bool {
 	return true
 }
 
-func (e *SwapEvent) GetTx(bnbPrice decimal.Decimal) *orm.Tx {
+func (e *SwapEvent) GetTx(nativeTokenPrice decimal.Decimal) *orm.Tx {
 	tx := &orm.Tx{
 		TxHash:        e.TxHash.String(),
 		Maker:         e.Maker.String(),
@@ -53,7 +53,7 @@ func (e *SwapEvent) GetTx(bnbPrice decimal.Decimal) *orm.Tx {
 		log.Logger.Warn("wrong pancake v2 swap event", zap.Any("event", e))
 	}
 
-	tx.AmountUsd, tx.PriceUsd = types.CalcAmountAndPrice(bnbPrice, tx.Token0Amount, tx.Token1Amount, e.Pair.Token1.Address)
+	tx.AmountUsd, tx.PriceUsd = types.CalcAmountAndPrice(nativeTokenPrice, tx.Token0Amount, tx.Token1Amount, e.Pair.Token1.Address)
 	return tx
 }
 

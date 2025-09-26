@@ -125,7 +125,7 @@ func (p *blockParser) waitForNativeTokenPrice(blockNumber *big.Int, blockTimesta
 		return price
 	}
 }
-func (p *blockParser) parseTxReceipt2(pbc *types.ParseBlockContext, txReceipt *ethtypes.Receipt) *types.TxResult {
+func (p *blockParser) parseTxReceipt(pbc *types.ParseBlockContext, txReceipt *ethtypes.Receipt) *types.TxResult {
 	txSender, err := pbc.GetTxSender(txReceipt.TransactionIndex)
 	if err != nil {
 		log.Logger.Fatal("Err: get tx sender err",
@@ -298,7 +298,7 @@ func (p *blockParser) parseBlock(pbc *types.ParseBlockContext) {
 		if txReceipt.Status != 1 {
 			continue
 		}
-		br.AddTxResult(p.parseTxReceipt2(pbc, txReceipt))
+		br.AddTxResult(p.parseTxReceipt(pbc, txReceipt))
 	}
 
 	duration := time.Since(now)
