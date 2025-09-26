@@ -16,7 +16,7 @@ func TestPair_IsFiltered(t *testing.T) {
 		Token1Core: &TokenCore{Address: common.HexToAddress("0xfe0A4739139D5b64b9fA86DA767B464086A9d5B2")},
 	}
 
-	filtered := pair.FilterByToken0AndToken1()
+	filtered := pair.FilterNoBaseToken()
 	assert.Equal(t, filtered, true)
 	assert.Equal(t, pair.Filtered, true)
 	assert.Equal(t, pair.FilterCode, FilterCodeNoBaseToken)
@@ -43,18 +43,18 @@ func TestPair_MarshalBinary(t *testing.T) {
 	}
 
 	pair := &Pair{
-		Address:          address,
-		TokenReversed:    false,
-		Token0Core:       tokenBasic,
-		Token1Core:       tokenBasic,
-		Token0:           token,
-		Token1:           token,
-		Token0InitAmount: decimal.NewFromInt(1),
-		Token1InitAmount: decimal.NewFromInt(1),
-		Block:            1,
-		ProtocolId:       1,
-		Filtered:         true,
-		FilterCode:       1,
+		Address:       address,
+		TokenReversed: false,
+		Token0Core:    tokenBasic,
+		Token1Core:    tokenBasic,
+		Token0:        token,
+		Token1:        token,
+		InitAmount0:   decimal.NewFromInt(1),
+		InitAmount1:   decimal.NewFromInt(1),
+		Block:         1,
+		ProtocolId:    1,
+		Filtered:      true,
+		FilterCode:    1,
 	}
 
 	bytes, err := pair.MarshalBinary()

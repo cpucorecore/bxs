@@ -19,7 +19,7 @@ var (
 			Unpacker: pcommon.EthLogUnpacker{
 				AbiEvent:      xlaunch.CreatedEvent,
 				TopicLen:      4,
-				DataUnpackLen: 9,
+				DataUnpackLen: 10,
 			},
 		},
 	}

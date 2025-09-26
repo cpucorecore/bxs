@@ -17,69 +17,29 @@ const (
 	FilterCodeNoXLaunchToken
 )
 
-type TokenCore struct {
-	Address  common.Address `json:"-"`
-	Symbol   string
-	Decimals int8
+type TokenTinyInfo struct {
+	Address common.Address
+	Symbol  string
+	Decimal int8
 }
 
-func (t *TokenCore) MarshalJSON() ([]byte, error) {
-	type Alias TokenCore
-	return json.Marshal(&struct {
-		AddressString string `json:"Address"`
-		*Alias
-	}{
-		AddressString: t.Address.String(),
-		Alias:         (*Alias)(t),
-	})
-}
-
-func (t *TokenCore) UnmarshalJSON(data []byte) error {
-	type Alias TokenCore
-	aux := &struct {
-		AddressString string `json:"Address"`
-		*Alias
-	}{
-		Alias: (*Alias)(t),
-	}
-	if err := json.Unmarshal(data, &aux); err != nil {
-		return err
-	}
-	t.Address = common.HexToAddress(aux.AddressString)
-	return nil
-}
-
-func (t *TokenCore) Equal(token *TokenCore) bool {
-	if !IsSameAddress(t.Address, token.Address) {
-		return false
-	}
-
-	if t.Symbol != token.Symbol {
-		return false
-	}
-
-	if t.Decimals != token.Decimals {
-		return false
-	}
-
-	return true
+func (t *TokenTinyInfo) IsBaseToken() bool {
+	return IsBaseToken(t.Address)
 }
 
 type Pair struct {
-	Address          common.Address `json:"-"`
-	TokenReversed    bool
-	Token0Core       *TokenCore
-	Token1Core       *TokenCore
-	Token0           *Token `json:"-"`
-	Token1           *Token `json:"-"`
-	Token0InitAmount decimal.Decimal
-	Token1InitAmount decimal.Decimal
-	Block            uint64
-	BlockAt          time.Time
-	ProtocolId       int
-	Filtered         bool
-	FilterCode       int
-	Timestamp        time.Time
+	Address       common.Address
+	TokenReversed bool
+	Token0        *TokenTinyInfo
+	Token1        *TokenTinyInfo
+	InitAmount0   decimal.Decimal
+	InitAmount1   decimal.Decimal
+	Block         uint64
+	BlockAt       time.Time
+	ProtocolId    int
+	Filtered      bool
+	FilterCode    int
+	UpdateTs      time.Time
 }
 
 func (p *Pair) String() string {
@@ -87,34 +47,7 @@ func (p *Pair) String() string {
 	return string(bytes)
 }
 
-func (p *Pair) MarshalBinary() ([]byte, error) {
-	type Alias Pair
-	return json.Marshal(&struct {
-		AddressString string `json:"Address"`
-		*Alias
-	}{
-		AddressString: p.Address.String(),
-		Alias:         (*Alias)(p),
-	})
-}
-
-func (p *Pair) UnmarshalBinary(data []byte) error {
-	type Alias Pair
-	aux := &struct {
-		AddressString string `json:"Address"`
-		*Alias
-	}{
-		Alias: (*Alias)(p),
-	}
-	if err := json.Unmarshal(data, &aux); err != nil {
-		return err
-	}
-	p.Address = common.HexToAddress(aux.AddressString)
-	return nil
-}
-
 func (p *Pair) swapToken0Token1() {
-	p.Token0Core, p.Token1Core = p.Token1Core, p.Token0Core
 	p.Token0, p.Token1 = p.Token1, p.Token0
 	p.TokenReversed = true
 }
@@ -126,16 +59,16 @@ func (p *Pair) Equal(pair *Pair) bool {
 	if p.TokenReversed != pair.TokenReversed {
 		return false
 	}
-	if !p.Token0Core.Equal(pair.Token0Core) {
+	if !IsSameAddress(p.Token0.Address, pair.Token0.Address) {
 		return false
 	}
-	if !p.Token1Core.Equal(pair.Token1Core) {
+	if !IsSameAddress(p.Token1.Address, pair.Token1.Address) {
 		return false
 	}
-	if !p.Token0InitAmount.Equal(pair.Token0InitAmount) {
+	if !p.InitAmount0.Equal(pair.InitAmount0) {
 		return false
 	}
-	if !p.Token1InitAmount.Equal(pair.Token1InitAmount) {
+	if !p.InitAmount1.Equal(pair.InitAmount1) {
 		return false
 	}
 	if p.Block != pair.Block {
@@ -153,12 +86,8 @@ func (p *Pair) Equal(pair *Pair) bool {
 	return true
 }
 
-func (p *Pair) IsFiltered() bool {
-	return p.Filtered
-}
-
-func (p *Pair) FilterByToken0AndToken1() bool {
-	if !IsBaseToken(p.Token0Core.Address) && !IsBaseToken(p.Token1Core.Address) {
+func (p *Pair) FilterNoBaseToken() bool {
+	if !p.Token0.IsBaseToken() && !p.Token1.IsBaseToken() {
 		p.Filtered = true
 		p.FilterCode = FilterCodeNoBaseToken
 	}
@@ -182,12 +111,12 @@ func getPairName(token0Symbol, token1Symbol string) string {
 
 func (p *Pair) GetOrmPair() *orm.Pair {
 	return &orm.Pair{
-		Name:     getPairName(p.Token0Core.Symbol, p.Token1Core.Symbol),
+		Name:     getPairName(p.Token0.Symbol, p.Token1.Symbol),
 		Address:  p.Address.String(),
-		Token0:   p.Token0Core.Address.String(),
-		Token1:   p.Token1Core.Address.String(),
-		Reserve0: p.Token0InitAmount.Mul(decimal.New(1, int32(p.Token0Core.Decimals))), // for db type is numeric(78)
-		Reserve1: p.Token1InitAmount.Mul(decimal.New(1, int32(p.Token1Core.Decimals))), // for db type is numeric(78)
+		Token0:   p.Token0.Address.String(),
+		Token1:   p.Token1.Address.String(),
+		Reserve0: p.InitAmount0,
+		Reserve1: p.InitAmount1,
 		ChainId:  chain_params.G.ChainID,
 		Block:    p.Block,
 		BlockAt:  p.BlockAt,

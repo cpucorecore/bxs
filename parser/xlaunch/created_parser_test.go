@@ -36,14 +36,14 @@ func TestCreated(t *testing.T) {
 			Symbol:   "T",
 			Decimals: 18,
 		},
-		Token1Core:       types.NativeTokenCore,
-		Token0InitAmount: token0InitAmount,
-		Token1InitAmount: token1InitAmount,
-		Block:            65762817,
-		BlockAt:          time.Unix(int64(blockTimestamp), 0),
-		ProtocolId:       protocolId,
-		Filtered:         false,
-		FilterCode:       0,
+		Token1Core:  types.NativeTokenCore,
+		InitAmount0: token0InitAmount,
+		InitAmount1: token1InitAmount,
+		Block:       65762817,
+		BlockAt:     time.Unix(int64(blockTimestamp), 0),
+		ProtocolId:  protocolId,
+		Filtered:    false,
+		FilterCode:  0,
 	}
 
 	require.True(t, pairWrap.Pair.Equal(expectPair), "expect: %v, actual: %v", expectPair, pairWrap.Pair)

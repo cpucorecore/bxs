@@ -49,7 +49,7 @@ var (
 		WBNBAddress:                  WBNBAddressTestnet,
 	}
 
-	G *ChainParams
+	G *ChainParams = mainnetParams
 )
 
 func LoadNetwork(testnet bool, xLaunchFactoryAddress common.Address) {

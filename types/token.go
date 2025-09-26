@@ -3,7 +3,6 @@ package types
 import (
 	"bxs/chain_params"
 	"bxs/repository/orm"
-	"encoding/json"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/shopspring/decimal"
 	"time"
@@ -14,13 +13,13 @@ var (
 		Address:  ZeroAddress,
 		Creator:  ZeroAddress,
 		Symbol:   NativeTokenSymbol,
-		Decimals: Decimals18,
+		Decimals: Decimal18,
 	}
 
-	NativeTokenCore = &TokenCore{
-		Address:  ZeroAddress,
-		Symbol:   NativeTokenSymbol,
-		Decimals: Decimals18,
+	NativeTokenCore = &TokenTinyInfo{
+		Address: ZeroAddress,
+		Symbol:  NativeTokenSymbol,
+		Decimal: Decimal18,
 	}
 )
 
@@ -51,8 +50,8 @@ func IsBaseToken(address common.Address) bool {
 }
 
 type Token struct {
-	Address     common.Address `json:"-"`
-	Creator     common.Address `json:"-"`
+	Address     common.Address
+	Creator     common.Address
 	Name        string
 	Symbol      string
 	Decimals    int8
@@ -61,42 +60,12 @@ type Token struct {
 	BlockTime   time.Time
 	Program     string
 	Filtered    bool
-	Timestamp   time.Time
 	URL         string `json:"url"`
 	Description string
 	Telegram    string
 	Twitter     string
 	Website     string
-}
-
-func (t *Token) MarshalBinary() ([]byte, error) {
-	type Alias Token
-	return json.Marshal(&struct {
-		AddressString string `json:"Address"`
-		CreatorString string `json:"Creator"`
-		*Alias
-	}{
-		AddressString: t.Address.String(),
-		CreatorString: t.Creator.String(),
-		Alias:         (*Alias)(t),
-	})
-}
-
-func (t *Token) UnmarshalBinary(data []byte) error {
-	type Alias Token
-	aux := &struct {
-		AddressString string `json:"Address"`
-		CreatorString string `json:"Creator"`
-		*Alias
-	}{
-		Alias: (*Alias)(t),
-	}
-	if err := json.Unmarshal(data, &aux); err != nil {
-		return err
-	}
-	t.Address = common.HexToAddress(aux.AddressString)
-	t.Creator = common.HexToAddress(aux.CreatorString)
-	return nil
+	UpdateTs    time.Time
 }
 
 func (t *Token) Equal(token *Token) bool {
@@ -140,5 +109,13 @@ func (t *Token) GetOrmToken() *orm.Token {
 		Telegram:    t.Telegram,
 		Twitter:     t.Twitter,
 		Website:     t.Website,
+	}
+}
+
+func (t *Token) GetTokenTinyInfo() *TokenTinyInfo {
+	return &TokenTinyInfo{
+		Address: t.Address,
+		Symbol:  t.Symbol,
+		Decimal: t.Decimals,
 	}
 }

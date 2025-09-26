@@ -27,8 +27,8 @@ func (e *SellEvent) GetTx(nativeTokenPrice decimal.Decimal) *orm.Tx {
 		TxHash:        e.TxHash.String(),
 		Event:         types.Sell,
 		Maker:         e.Seller.String(),
-		Token0Address: e.Pair.Token0Core.Address.String(),
-		Token1Address: e.Pair.Token1Core.Address.String(),
+		Token0Address: e.Pair.Token0.Address.String(),
+		Token1Address: e.Pair.Token1.Address.String(),
 		Block:         e.BlockNumber,
 		BlockAt:       e.BlockTime,
 		BlockIndex:    e.TxIndex,
@@ -38,7 +38,7 @@ func (e *SellEvent) GetTx(nativeTokenPrice decimal.Decimal) *orm.Tx {
 	}
 
 	tx.Token0Amount, tx.Token1Amount = types.ParseAmountsByPair(e.TokenAmount, e.NativeTokenAmount, e.Pair)
-	tx.AmountUsd, tx.PriceUsd = types.CalcAmountAndPrice(nativeTokenPrice, tx.Token0Amount, tx.Token1Amount, e.Pair.Token1Core.Address)
+	tx.AmountUsd, tx.PriceUsd = types.CalcAmountAndPrice(nativeTokenPrice, tx.Token0Amount, tx.Token1Amount, e.Pair.Token1.Address)
 	return tx
 }
 
@@ -51,8 +51,8 @@ func (e *SellEvent) GetPoolUpdate() *types.PoolUpdate {
 	return &types.PoolUpdate{
 		LogIndex: e.EventCommon.LogIndex,
 		Address:  e.EventCommon.Pair.Address,
-		Token0:   e.EventCommon.Pair.Token0Core.Address,
-		Token1:   e.EventCommon.Pair.Token1Core.Address,
+		Token0:   e.EventCommon.Pair.Token0.Address,
+		Token1:   e.EventCommon.Pair.Token1.Address,
 		Amount0:  a0,
 		Amount1:  a1,
 	}

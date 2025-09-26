@@ -43,10 +43,10 @@ func (o *PairCreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error
 	e.Pair = &types.Pair{
 		Address:       e.PairAddr,
 		TokenReversed: e.tokenReversed,
-		Token0Core: &types.TokenCore{
+		Token0: &types.TokenTinyInfo{
 			Address: e.Token0Addr,
 		},
-		Token1Core: &types.TokenCore{
+		Token1: &types.TokenTinyInfo{
 			Address: e.Token1Addr,
 		},
 		Block:      e.BlockNumber,

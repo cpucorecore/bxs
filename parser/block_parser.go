@@ -175,21 +175,21 @@ func (p *blockParser) parseTxReceipt2(pbc *types.ParseBlockContext, txReceipt *e
 			// if token not exist, pair filtered, and update pair cache, continue
 
 			pair := event.GetPair()
-			token0, ok := p.cache.GetToken(pair.Token0Core.Address)
+			token0, ok := p.cache.GetToken(pair.Token0.Address)
 			if !ok {
-				log.Logger.Sugar().Infof("pair %s have no xlaunch token, ignore it, token0 %s", pair.Address, pair.Token0Core.Address)
+				log.Logger.Sugar().Infof("pair %s have no xlaunch token, ignore it, token0 %s", pair.Address, pair.Token0.Address)
 				pair.Filtered = true
 				pair.FilterCode = types.FilterCodeNoXLaunchToken
 			} else {
-				pair.Token0Core = &types.TokenCore{
-					Address:  token0.Address,
-					Symbol:   token0.Symbol,
-					Decimals: token0.Decimals,
+				pair.Token0 = &types.TokenTinyInfo{
+					Address: token0.Address,
+					Symbol:  token0.Symbol,
+					Decimal: token0.Decimals,
 				}
-				pair.Token1Core = &types.TokenCore{
-					Address:  chain_params.G.WBNBAddress,
-					Symbol:   "WBNB",
-					Decimals: 18,
+				pair.Token1 = &types.TokenTinyInfo{
+					Address: chain_params.G.WBNBAddress,
+					Symbol:  "WBNB",
+					Decimal: 18,
 				}
 				txResult.AddPairCreatedEvent(event)
 				pairs = append(pairs, pair)
@@ -220,17 +220,17 @@ func (p *blockParser) parseTxReceipt2(pbc *types.ParseBlockContext, txReceipt *e
 				tokens = append(tokens, &types.Token{
 					Address:  pair.Token0.Address,
 					Symbol:   pair.Token0.Symbol,
-					Decimals: pair.Token0.Decimals,
+					Decimals: pair.Token0.Decimal,
 					Program:  types.ProtocolNameXLaunch,
 				})
 			}
 			event.SetPair(pair)
 
 			if event.IsMigrated() {
-				p.cache.SetMigrateToken(event.GetPair().Token0Core.Address)
+				p.cache.SetMigrateToken(event.GetPair().Token0.Address)
 				migratedPools = append(migratedPools, &types.MigratedPool{
 					Pool:  event.GetPair().Address,
-					Token: event.GetPair().Token0Core.Address,
+					Token: event.GetPair().Token0.Address,
 				})
 			}
 

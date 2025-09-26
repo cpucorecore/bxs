@@ -138,20 +138,15 @@ func (s *pairService) getPairTokens(pair *types.Pair) *types.PairWrap {
 		NewPair: !s.cache.PairExist(pair.Address),
 	}
 
-	token0, err, fromCache := s.getToken(pair.Token0Core.Address)
+	token0, err, fromCache := s.getToken(pair.Token0.Address)
 	if err != nil {
 		pair.Filtered = true
 		pair.FilterCode = types.FilterCodeGetToken
 		return pairWrap
 	}
 
-	pair.Token0 = token0
-	pair.Token1 = types.NativeToken
-
-	pair.Token0Core.Symbol = token0.Symbol
-	pair.Token0Core.Decimals = token0.Decimals
-	pair.Token1Core.Symbol = pair.Token1.Symbol
-	pair.Token1Core.Decimals = pair.Token1.Decimals
+	pair.Token0 = token0.GetTokenTinyInfo()
+	pair.Token1 = types.NativeTokenCore
 
 	pairWrap.NewToken0 = !fromCache
 	pairWrap.NewToken1 = false
@@ -226,15 +221,15 @@ func (s *pairService) doGetPair(pairAddress common.Address) *types.Pair {
 		return pair
 	}
 
-	pair.Token0Core = &types.TokenCore{
+	pair.Token0 = &types.TokenTinyInfo{
 		Address: token0Addr,
 	}
-	pair.Token1Core = &types.TokenCore{
+	pair.Token1 = &types.TokenTinyInfo{
 		Address: types.ZeroAddress,
 	}
 
 	metrics.GetPairDurationMs.Observe(float64(time.Since(now).Milliseconds()))
-	pair.FilterByToken0AndToken1()
+	pair.FilterNoBaseToken()
 	return pair
 }
 

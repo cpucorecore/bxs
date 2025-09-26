@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/shopspring/decimal"
 	"math/big"
+	"time"
 )
 
 const (
@@ -60,25 +61,24 @@ func (e *CreatedEvent) DoGetPair() *types.Pair {
 
 	pair := &types.Pair{
 		Address: e.PoolAddress,
-		Token0Core: &types.TokenCore{
-			Address:  e.TokenAddress,
-			Symbol:   e.Symbol,
-			Decimals: types.Decimals18,
+		Token0: &types.TokenTinyInfo{
+			Address: e.TokenAddress,
+			Symbol:  e.Symbol,
+			Decimal: types.Decimal18,
 		},
-		Token1Core: types.NativeTokenCore,
+		Token1:     types.NativeTokenCore,
 		Block:      e.BlockNumber,
 		BlockAt:    e.BlockTime,
 		ProtocolId: protocolId,
 	}
 
-	pair.Token0InitAmount, pair.Token1InitAmount = types.ParseAmountsByPair(e.TokenInitAmount, e.BaseTokenInitAmount, pair)
-	pair.Token0 = e.DoGetToken0()
+	pair.InitAmount0, pair.InitAmount1 = types.ParseAmountsByPair(e.TokenInitAmount, e.BaseTokenInitAmount, pair)
 	e.Pair = pair
 	return e.Pair
 }
 
 func (e *CreatedEvent) GetToken0() *types.Token {
-	return e.Pair.Token0
+	return e.DoGetToken0()
 }
 
 func (e *CreatedEvent) DoGetToken0() *types.Token {
@@ -87,8 +87,8 @@ func (e *CreatedEvent) DoGetToken0() *types.Token {
 		Creator:     e.Creator,
 		Name:        e.Name,
 		Symbol:      e.Symbol,
-		Decimals:    types.Decimals18,
-		TotalSupply: decimal.NewFromBigInt(e.TotalSupply, -int32(types.Decimals18)),
+		Decimals:    types.Decimal18,
+		TotalSupply: decimal.NewFromBigInt(e.TotalSupply, -int32(types.Decimal18)),
 		BlockNumber: e.BlockNumber,
 		BlockTime:   e.BlockTime,
 		Program:     protocolName,
@@ -113,9 +113,14 @@ func (e *CreatedEvent) GetPoolUpdate() *types.PoolUpdate {
 	u := &types.PoolUpdate{
 		LogIndex: e.EventCommon.LogIndex,
 		Address:  e.EventCommon.Pair.Address,
-		Token0:   e.EventCommon.Pair.Token0Core.Address,
-		Token1:   e.EventCommon.Pair.Token1Core.Address,
+		Token0:   e.EventCommon.Pair.Token0.Address,
+		Token1:   e.EventCommon.Pair.Token1.Address,
 	}
 	u.Amount0, u.Amount1 = types.ParseAmountsByPair(e.TokenInitAmount, e.BaseTokenInitAmount, e.Pair)
 	return u
+}
+
+func (e *CreatedEvent) SetBlockTime(blockTime time.Time) {
+	e.BlockTime = blockTime
+	e.Pair.BlockAt = e.BlockTime
 }
