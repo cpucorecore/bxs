@@ -125,96 +125,6 @@ func (p *blockParser) waitForNativeTokenPrice(blockNumber *big.Int, blockTimesta
 		return price
 	}
 }
-
-func (p *blockParser) parseTxReceipt(pbc *types.ParseBlockContext, txReceipt *ethtypes.Receipt) *types.TxResult {
-	txSender, err := pbc.GetTxSender(txReceipt.TransactionIndex)
-	if err != nil {
-		log.Logger.Fatal("Err: get tx sender err",
-			zap.Error(err),
-			zap.Any("pbc", pbc),
-			zap.Any("txReceipt", txReceipt),
-		)
-	}
-
-	txResult := types.NewTxResult(txSender, pbc.HeightTime.Time)
-	pairs := make([]*types.Pair, 0, 2)
-	tokens := make([]*types.Token, 0, 2)
-	migratedPools := make([]*types.MigratedPool, 0, 2)
-	for _, ethLog := range txReceipt.Logs {
-		if len(ethLog.Topics) == 0 {
-			continue
-		}
-
-		event, parseErr := p.topicRouter.Parse(ethLog)
-		if parseErr != nil {
-			continue
-		}
-
-		if event.IsCreated() {
-			event.SetBlockTime(pbc.HeightTime.Time)
-
-			pair := event.GetPair()
-			token0 := event.GetToken0()
-			p.cache.SetPair(pair)
-			p.cache.SetToken(token0)
-			pairs = append(pairs, pair)
-			tokens = append(tokens, token0)
-			txResult.AddPoolUpdate(event.GetPoolUpdate())
-			continue
-		}
-
-		if event.IsPairCreated() {
-			txResult.AddPairCreatedEvent(event)
-			pairs = append(pairs, event.GetPair())
-			continue
-		}
-
-		// swap event: buy or sell
-		pairAddr := event.GetPairAddress()
-		pair, ok := p.cache.GetPair(pairAddr)
-		if !ok {
-			log.Logger.Sugar().Warnf("pool %s not cached, it should be", pairAddr)
-			pw := p.pairService.GetPair(pairAddr)
-			pair = pw.Pair
-			if pair == nil {
-				log.Logger.Sugar().Fatalf("get pair %s fail", pairAddr)
-			}
-
-			if pair.Filtered {
-				log.Logger.Sugar().Warnf("pair %s is filtered, filter code %d", pairAddr, pair.FilterCode)
-				continue
-			}
-
-			pairs = append(pairs, pair)
-			tokens = append(tokens, &types.Token{
-				Address:  pair.Token0.Address,
-				Symbol:   pair.Token0.Symbol,
-				Decimals: pair.Token0.Decimals,
-				Program:  types.ProtocolNameXLaunch,
-			})
-		}
-		event.SetPair(pair)
-
-		if event.IsMigrated() {
-			p.cache.SetMigrateToken(event.GetPair().Token0Core.Address)
-			migratedPools = append(migratedPools, &types.MigratedPool{
-				Pool:  event.GetPair().Address,
-				Token: event.GetPair().Token0Core.Address,
-			})
-		}
-
-		txResult.AddPoolUpdate(event.GetPoolUpdate())
-		txResult.AddSwapEvent(event)
-	}
-
-	txResult.SetPairs(pairs)
-	txResult.SetTokens(tokens)
-	txResult.SetMigratedPools(migratedPools)
-
-	p.processTxPairCreatedEvents(txResult)
-	return txResult
-}
-
 func (p *blockParser) parseTxReceipt2(pbc *types.ParseBlockContext, txReceipt *ethtypes.Receipt) *types.TxResult {
 	txSender, err := pbc.GetTxSender(txReceipt.TransactionIndex)
 	if err != nil {
@@ -330,10 +240,12 @@ func (p *blockParser) parseTxReceipt2(pbc *types.ParseBlockContext, txReceipt *e
 			pair, ok := p.cache.GetPair(event.GetPairAddress())
 			if !ok {
 				log.Logger.Sugar().Warnf("pair %s not cached, ignore it, tx hash %s", event.GetPairAddress(), event.GetTxHash())
+				continue
 			}
 
 			if pair.Filtered {
 				log.Logger.Sugar().Infof("pair %s is filtered, filter code %d, tx hash %s", event.GetPairAddress(), pair.FilterCode, event.GetTxHash())
+				continue
 			}
 
 			event.SetPair(pair)
@@ -342,10 +254,12 @@ func (p *blockParser) parseTxReceipt2(pbc *types.ParseBlockContext, txReceipt *e
 			pair, ok := p.cache.GetPair(event.GetPairAddress())
 			if !ok {
 				log.Logger.Sugar().Warnf("pair %s not cached, ignore it, tx hash %s", event.GetPairAddress(), event.GetTxHash())
+				continue
 			}
 
 			if pair.Filtered {
 				log.Logger.Sugar().Infof("pair %s is filtered, filter code %d, tx hash %s", event.GetPairAddress(), pair.FilterCode, event.GetTxHash())
+				continue
 			}
 
 			event.SetPair(pair)
@@ -384,7 +298,7 @@ func (p *blockParser) parseBlock(pbc *types.ParseBlockContext) {
 		if txReceipt.Status != 1 {
 			continue
 		}
-		br.AddTxResult(p.parseTxReceipt(pbc, txReceipt))
+		br.AddTxResult(p.parseTxReceipt2(pbc, txReceipt))
 	}
 
 	duration := time.Since(now)

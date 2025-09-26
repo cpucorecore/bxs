@@ -191,7 +191,7 @@ func (p *Pair) GetOrmPair() *orm.Pair {
 		ChainId:  chain_params.G.ChainID,
 		Block:    p.Block,
 		BlockAt:  p.BlockAt,
-		Program:  ProtocolNameXLaunch,
+		Program:  GetProtocolName(p.ProtocolId),
 	}
 }
 

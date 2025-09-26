@@ -51,8 +51,8 @@ func IsBaseToken(address common.Address) bool {
 }
 
 type Token struct {
-	Address     common.Address `json:"-"`
-	Creator     common.Address `json:"-"`
+	Address     common.Address
+	Creator     common.Address
 	Name        string
 	Symbol      string
 	Decimals    int8
