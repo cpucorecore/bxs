@@ -31,7 +31,7 @@ func GetTestContext() *TestContext {
 		panic(err)
 	}
 
-	factoryAddress := common.HexToAddress("0x5339AC4610d7b34f4a4CB3f5B7E1c4CdaD014b78")
+	factoryAddress := common.HexToAddress("0xdb9d8574AB68AA9ccd5CAedE1C641BC42a995a54")
 	chain_params.LoadNetwork(true, factoryAddress)
 
 	contractCaller := NewContractCaller(ethClient, config.G.ContractCaller.Retry.GetRetryParams())

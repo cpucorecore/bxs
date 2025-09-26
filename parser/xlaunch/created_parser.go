@@ -35,13 +35,14 @@ func (o *CreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
 		TokenAddress:        common.BytesToAddress(ethLog.Topics[3].Bytes()[12:]),
 		BaseTokenInitAmount: eventInput[0].(*big.Int),
 		TokenInitAmount:     eventInput[1].(*big.Int),
-		Name:                eventInput[2].(string),
-		Symbol:              eventInput[3].(string),
-		URL:                 eventInput[4].(string),
-		Description:         eventInput[5].(string),
-		Telegram:            eventInput[6].(string),
-		Twitter:             eventInput[7].(string),
-		Website:             eventInput[8].(string),
+		TotalSupply:         eventInput[2].(*big.Int),
+		Name:                eventInput[3].(string),
+		Symbol:              eventInput[4].(string),
+		URL:                 eventInput[5].(string),
+		Description:         eventInput[6].(string),
+		Telegram:            eventInput[7].(string),
+		Twitter:             eventInput[8].(string),
+		Website:             eventInput[9].(string),
 	}
 
 	createdEvent.FormatString()

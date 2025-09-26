@@ -4,6 +4,7 @@ import (
 	"bxs/types"
 	"bxs/util"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/shopspring/decimal"
 	"math/big"
 )
 
@@ -24,6 +25,7 @@ type CreatedEvent struct {
 	TokenAddress        common.Address
 	BaseTokenInitAmount *big.Int
 	TokenInitAmount     *big.Int
+	TotalSupply         *big.Int
 	Name                string
 	Symbol              string
 	URL                 string
@@ -86,6 +88,7 @@ func (e *CreatedEvent) DoGetToken0() *types.Token {
 		Name:        e.Name,
 		Symbol:      e.Symbol,
 		Decimals:    types.Decimals18,
+		TotalSupply: decimal.NewFromBigInt(e.TotalSupply, -int32(types.Decimals18)),
 		BlockNumber: e.BlockNumber,
 		BlockTime:   e.BlockTime,
 		Program:     protocolName,
