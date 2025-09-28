@@ -2,7 +2,7 @@ package sequencer
 
 import (
 	"bxs/config"
-	"bxs/log"
+	"bxs/logger"
 	"go.uber.org/zap"
 	"sync"
 )
@@ -36,11 +36,11 @@ func NewSequencer() Sequencer {
 }
 
 func (s *sequencer) Init(sequence uint64) {
-	log.Logger.Info("init sequencer", zap.Uint64("sequence", sequence))
+	logger.G.Info("init sequencer", zap.Uint64("sequence", sequence))
 	if s.sequence == 0 {
 		s.sequence = sequence - 1
 	} else {
-		log.Logger.Fatal("sequencer init err", zap.Uint64("sequence", sequence), zap.Uint64("old sequence", s.sequence))
+		logger.G.Fatal("sequencer init err", zap.Uint64("sequence", sequence), zap.Uint64("old sequence", s.sequence))
 	}
 }
 

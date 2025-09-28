@@ -2,7 +2,7 @@ package cache
 
 import (
 	"bxs/chain_params"
-	"bxs/log"
+	"bxs/logger"
 	"bxs/types"
 	"context"
 	"encoding/json"
@@ -93,7 +93,7 @@ func (c *twoTierCache) SetPrice(blockNumber *big.Int, price decimal.Decimal) {
 	c.memory.Set(k, price, cache.DefaultExpiration)
 	err := c.redis.Set(c.ctx, k, price.String(), 0).Err()
 	if err != nil {
-		log.Logger.Error("save price failed", zap.Error(err))
+		logger.G.Error("save price failed", zap.Error(err))
 	}
 }
 
@@ -107,7 +107,7 @@ func (c *twoTierCache) GetPrice(blockNumber *big.Int) (decimal.Decimal, bool) {
 	v, err := c.redis.Get(c.ctx, k).Result()
 	if err != nil {
 		if !errors.Is(err, redis.Nil) {
-			log.Logger.Error("get price failed", zap.Error(err))
+			logger.G.Error("get price failed", zap.Error(err))
 		}
 		return decimal.Zero, false
 	}
@@ -127,12 +127,12 @@ func (c *twoTierCache) SetToken(token *types.Token) {
 
 	bytes, err := json.Marshal(token)
 	if err != nil {
-		log.Logger.Sugar().Fatalf("json marshal token [%s] err [%s]", token.Address.String(), err.Error())
+		logger.G.Sugar().Fatalf("json marshal token [%s] err [%s]", token.Address.String(), err.Error())
 	}
 
 	err = c.redis.Set(c.ctx, k, bytes, 0).Err()
 	if err != nil {
-		log.Logger.Sugar().Fatalf("redis set token [%s] err [%s]", string(bytes), err.Error())
+		logger.G.Sugar().Fatalf("redis set token [%s] err [%s]", string(bytes), err.Error())
 	}
 }
 
@@ -146,7 +146,7 @@ func (c *twoTierCache) GetToken(address common.Address) (*types.Token, bool) {
 	bytes, err := c.redis.Get(c.ctx, k).Bytes()
 	if err != nil {
 		if !errors.Is(err, redis.Nil) {
-			log.Logger.Sugar().Errorf("redis get token [%s] err [%s]", k, err.Error())
+			logger.G.Sugar().Errorf("redis get token [%s] err [%s]", k, err.Error())
 		}
 		return nil, false
 	}
@@ -154,7 +154,7 @@ func (c *twoTierCache) GetToken(address common.Address) (*types.Token, bool) {
 	token := &types.Token{}
 	err = json.Unmarshal(bytes, token)
 	if err != nil {
-		log.Logger.Sugar().Errorf("json unmarshal token [%s] err [%s]", string(bytes), err.Error())
+		logger.G.Sugar().Errorf("json unmarshal token [%s] err [%s]", string(bytes), err.Error())
 		return nil, false
 	}
 
@@ -167,7 +167,7 @@ func (c *twoTierCache) DelToken(address common.Address) {
 	c.memory.Delete(k)
 	err := c.redis.Del(c.ctx, k).Err()
 	if err != nil {
-		log.Logger.Sugar().Errorf("redis del token [%s] err [%s]", k, err.Error())
+		logger.G.Sugar().Errorf("redis del token [%s] err [%s]", k, err.Error())
 	}
 }
 
@@ -178,12 +178,12 @@ func (c *twoTierCache) SetPair(pair *types.Pair) {
 
 	bytes, err := json.Marshal(pair)
 	if err != nil {
-		log.Logger.Sugar().Fatalf("json marshal pair [%s] err [%s]", pair.Address.String(), err.Error())
+		logger.G.Sugar().Fatalf("json marshal pair [%s] err [%s]", pair.Address.String(), err.Error())
 	}
 
 	err = c.redis.Set(c.ctx, k, bytes, 0).Err()
 	if err != nil {
-		log.Logger.Sugar().Fatalf("redis set pair [%s] err [%s]", string(bytes), err.Error())
+		logger.G.Sugar().Fatalf("redis set pair [%s] err [%s]", string(bytes), err.Error())
 	}
 }
 
@@ -197,7 +197,7 @@ func (c *twoTierCache) GetPair(address common.Address) (*types.Pair, bool) {
 	bytes, err := c.redis.Get(c.ctx, k).Bytes()
 	if err != nil {
 		if !errors.Is(err, redis.Nil) {
-			log.Logger.Sugar().Errorf("redis get k [%s] err [%s]", k, err.Error())
+			logger.G.Sugar().Errorf("redis get k [%s] err [%s]", k, err.Error())
 		}
 		return nil, false
 	}
@@ -205,7 +205,7 @@ func (c *twoTierCache) GetPair(address common.Address) (*types.Pair, bool) {
 	pair := &types.Pair{}
 	err = json.Unmarshal(bytes, pair)
 	if err != nil {
-		log.Logger.Sugar().Warnf("json unmarshal bytes [%s] err [%v]", string(bytes), err.Error())
+		logger.G.Sugar().Warnf("json unmarshal bytes [%s] err [%v]", string(bytes), err.Error())
 		return nil, false
 	}
 
@@ -223,7 +223,7 @@ func (c *twoTierCache) DelPair(address common.Address) {
 	c.memory.Delete(k)
 	err := c.redis.Del(c.ctx, k).Err()
 	if err != nil {
-		log.Logger.Sugar().Errorf("redis del [%s] err [%s]", k, err.Error())
+		logger.G.Sugar().Errorf("redis del [%s] err [%s]", k, err.Error())
 	}
 }
 
@@ -235,7 +235,7 @@ func (c *twoTierCache) GetFinishedBlock() uint64 {
 	v, err := c.redis.Get(c.ctx, FbKey()).Uint64()
 	if err != nil {
 		if !errors.Is(err, redis.Nil) {
-			log.Logger.Error("redis get err", zap.Error(err))
+			logger.G.Error("redis get err", zap.Error(err))
 		}
 		return 0
 	}
@@ -247,7 +247,7 @@ func (c *twoTierCache) SetMigrateToken(address common.Address) {
 	c.memory.Set(k, true, cache.DefaultExpiration)
 	err := c.redis.Set(c.ctx, k, true, 0).Err()
 	if err != nil {
-		log.Logger.Sugar().Errorf("redis set migrate token [%s] err [%s]", k, err.Error())
+		logger.G.Sugar().Errorf("redis set migrate token [%s] err [%s]", k, err.Error())
 	}
 }
 
@@ -261,7 +261,7 @@ func (c *twoTierCache) MigrateTokenExist(address common.Address) bool {
 	_, err := c.redis.Get(c.ctx, k).Bool()
 	if err != nil {
 		if !errors.Is(err, redis.Nil) {
-			log.Logger.Sugar().Errorf("redis get migrate token [%s] err [%s]", k, err.Error())
+			logger.G.Sugar().Errorf("redis get migrate token [%s] err [%s]", k, err.Error())
 		}
 		return false
 	}
@@ -275,6 +275,6 @@ func (c *twoTierCache) DelMigrateToken(address common.Address) {
 	c.memory.Delete(k)
 	err := c.redis.Del(c.ctx, k).Err()
 	if err != nil {
-		log.Logger.Sugar().Fatalf("redis del migrate token [%s] err[%s]", k, err.Error())
+		logger.G.Sugar().Fatalf("redis del migrate token [%s] err[%s]", k, err.Error())
 	}
 }

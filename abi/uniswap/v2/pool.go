@@ -1,7 +1,7 @@
 package v2
 
 import (
-	"bxs/log"
+	"bxs/logger"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"
@@ -31,31 +31,31 @@ var (
 func init() {
 	pairAbi, err := abi.JSON(strings.NewReader(PairAbiJson))
 	if err != nil {
-		log.Logger.Fatal("Failed to parse pair ABI", zap.Error(err))
+		logger.G.Fatal("Failed to parse pair ABI", zap.Error(err))
 	}
 	PairAbi = &pairAbi
 
 	swapEvent, err := pairAbi.EventByID(SwapTopic0)
 	if err != nil {
-		log.Logger.Fatal("Failed to find SwapTopic0", zap.Error(err))
+		logger.G.Fatal("Failed to find SwapTopic0", zap.Error(err))
 	}
 	SwapEvent = swapEvent
 
 	syncEvent, err := pairAbi.EventByID(SyncTopic0)
 	if err != nil {
-		log.Logger.Fatal("Failed to find SwapTopic0", zap.Error(err))
+		logger.G.Fatal("Failed to find SwapTopic0", zap.Error(err))
 	}
 	SyncEvent = syncEvent
 
 	burnEvent, err := pairAbi.EventByID(BurnTopic0)
 	if err != nil {
-		log.Logger.Fatal("Failed to find BurnTopic0", zap.Error(err))
+		logger.G.Fatal("Failed to find BurnTopic0", zap.Error(err))
 	}
 	BurnEvent = burnEvent
 
 	mintEvent, err := pairAbi.EventByID(MintTopic0)
 	if err != nil {
-		log.Logger.Fatal("Failed to find MintTopic0", zap.Error(err))
+		logger.G.Fatal("Failed to find MintTopic0", zap.Error(err))
 	}
 	MintEvent = mintEvent
 }

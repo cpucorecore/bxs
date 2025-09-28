@@ -1,4 +1,4 @@
-package log
+package logger
 
 import (
 	"fmt"
@@ -11,20 +11,20 @@ import (
 	"bxs/config"
 )
 
-var Logger *zap.Logger
+var G *zap.Logger
 
 func init() {
 	InitLoggerForTest()
 }
 
 func InitLoggerForTest() {
-	Logger, _ = zap.NewDevelopment()
+	G, _ = zap.NewDevelopment()
 	return
 }
 
 func InitLogger() {
 	if !config.G.Log.Async {
-		Logger, _ = zap.NewDevelopment()
+		G, _ = zap.NewDevelopment()
 		return
 	}
 
@@ -49,5 +49,5 @@ func InitLogger() {
 		logLevel,
 	)
 
-	Logger = zap.New(core)
+	G = zap.New(core)
 }

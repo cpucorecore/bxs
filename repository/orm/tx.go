@@ -1,7 +1,7 @@
 package orm
 
 import (
-	"bxs/log"
+	"bxs/logger"
 	"bxs/util"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -72,37 +72,37 @@ func (t *Tx) Equal(tx *Tx) bool {
 
 func (t *Tx) Diff(tx *Tx) {
 	if t.TxHash != tx.TxHash {
-		log.Logger.Sugar().Infof("diff hash[%s/%s]", t.TxHash, tx.TxHash)
+		logger.G.Sugar().Infof("diff hash[%s/%s]", t.TxHash, tx.TxHash)
 	}
 	if t.Event != tx.Event {
-		log.Logger.Sugar().Infof("diff event[%s/%s]", t.Event, tx.Event)
+		logger.G.Sugar().Infof("diff event[%s/%s]", t.Event, tx.Event)
 	}
 	if t.Token0Address != tx.Token0Address {
-		log.Logger.Sugar().Infof("diff token0[%s/%s]", t.Token0Address, tx.Token0Address)
+		logger.G.Sugar().Infof("diff token0[%s/%s]", t.Token0Address, tx.Token0Address)
 	}
 	if t.Token1Address != tx.Token1Address {
-		log.Logger.Sugar().Infof("diff token1[%s/%s]", t.Token1Address, tx.Token1Address)
+		logger.G.Sugar().Infof("diff token1[%s/%s]", t.Token1Address, tx.Token1Address)
 	}
 	if t.Block != tx.Block {
-		log.Logger.Sugar().Infof("diff block[%d/%d]", t.Block, tx.Block)
+		logger.G.Sugar().Infof("diff block[%d/%d]", t.Block, tx.Block)
 	}
 	if t.BlockIndex != tx.BlockIndex {
-		log.Logger.Sugar().Infof("diff block index[%d/%d]", t.BlockIndex, tx.BlockIndex)
+		logger.G.Sugar().Infof("diff block index[%d/%d]", t.BlockIndex, tx.BlockIndex)
 	}
 	if t.TxIndex != tx.TxIndex {
-		log.Logger.Sugar().Infof("diff tx index[%d/%d]", t.TxIndex, tx.TxIndex)
+		logger.G.Sugar().Infof("diff tx index[%d/%d]", t.TxIndex, tx.TxIndex)
 	}
 	if t.PairAddress != tx.PairAddress {
-		log.Logger.Sugar().Infof("diff pair[%s/%s]", t.PairAddress, tx.PairAddress)
+		logger.G.Sugar().Infof("diff pair[%s/%s]", t.PairAddress, tx.PairAddress)
 	}
 	if t.Program != tx.Program {
-		log.Logger.Sugar().Infof("diff program[%s/%s]", t.Program, tx.Program)
+		logger.G.Sugar().Infof("diff program[%s/%s]", t.Program, tx.Program)
 	}
 	if !util.DecimalEqual(tx.Token0Amount, t.Token0Amount) {
-		log.Logger.Sugar().Infof("diff amt0[%s/%s]", t.Token0Amount, tx.Token1Amount)
+		logger.G.Sugar().Infof("diff amt0[%s/%s]", t.Token0Amount, tx.Token1Amount)
 	}
 	if !util.DecimalEqual(tx.Token1Amount, t.Token1Amount) {
-		log.Logger.Sugar().Infof("diff amt1[%s/%s]", t.Token1Amount, tx.Token0Amount)
+		logger.G.Sugar().Infof("diff amt1[%s/%s]", t.Token1Amount, tx.Token0Amount)
 	}
 }
 

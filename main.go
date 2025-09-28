@@ -5,7 +5,7 @@ import (
 	"bxs/cache"
 	"bxs/chain_params"
 	"bxs/config"
-	"bxs/log"
+	"bxs/logger"
 	"bxs/metrics"
 	"bxs/parser"
 	"bxs/repository"
@@ -41,7 +41,7 @@ func createDBService() service.DBService {
 	if config.G.TxDatabase.Enabled {
 		txDb, txDbErr = gorm.Open(postgres.Open(config.G.TxDatabase.DBDatasource.GetPostgresDsn()))
 		if txDbErr != nil {
-			log.Logger.Fatal("failed to connect to tx db", zap.Error(txDbErr))
+			logger.G.Fatal("failed to connect to tx db", zap.Error(txDbErr))
 		}
 
 		txRepository = repository.NewTxRepository(txDb)
@@ -51,7 +51,7 @@ func createDBService() service.DBService {
 	if config.G.TokenPairDatabase.Enabled {
 		tokenPairDb, tokenPairDbErr = gorm.Open(postgres.Open(config.G.TokenPairDatabase.DBDatasource.GetPostgresDsn()))
 		if tokenPairDbErr != nil {
-			log.Logger.Fatal("failed to connect to token_pair db", zap.Error(tokenPairDbErr))
+			logger.G.Fatal("failed to connect to token_pair db", zap.Error(tokenPairDbErr))
 		}
 
 		tokenRepository = repository.NewTokenRepository(tokenPairDb)
@@ -75,30 +75,30 @@ func main() {
 		os.Exit(0)
 	}
 
-	log.Logger.Info(GetVersion().String())
-	log.Logger.Info("config", zap.String("file path", configFile))
+	logger.G.Info(GetVersion().String())
+	logger.G.Info("config", zap.String("file path", configFile))
 	loadConfigErr := config.LoadConfigFile(configFile)
 	if loadConfigErr != nil {
-		log.Logger.Fatal("load config file err", zap.Error(loadConfigErr))
+		logger.G.Fatal("load config file err", zap.Error(loadConfigErr))
 	}
 
 	chain_params.LoadNetwork(config.G.TestNet, config.G.XLaunchFactoryAddress)
-	log.InitLogger()
+	logger.InitLogger()
 	metrics.Init(config.G.MetricsPort)
 
 	ethClient, dialEthErr := ethclient.Dial(config.G.Chain.Endpoint)
 	if dialEthErr != nil {
-		log.Logger.Fatal("Failed to connect to the chain(http): %v", zap.Error(dialEthErr))
+		logger.G.Fatal("Failed to connect to the chain(http): %v", zap.Error(dialEthErr))
 	}
 
 	wsEthClient, err := ethclient.Dial(config.G.Chain.WsEndpoint)
 	if err != nil {
-		log.Logger.Fatal("Failed to connect to the chain(ws): %v", zap.Error(err))
+		logger.G.Fatal("Failed to connect to the chain(ws): %v", zap.Error(err))
 	}
 
 	ethClientArchive, dialEthErrArchive := ethclient.Dial(config.G.Chain.EndpointArchive)
 	if dialEthErrArchive != nil {
-		log.Logger.Fatal("Failed to connect to the bsc archive(http): %v", zap.Error(dialEthErrArchive))
+		logger.G.Fatal("Failed to connect to the bsc archive(http): %v", zap.Error(dialEthErrArchive))
 	}
 
 	contractCallerArchive := service.NewContractCaller(ethClientArchive, config.G.ContractCaller.Retry.GetRetryParams())
@@ -137,7 +137,7 @@ func main() {
 	blockGetter := block_getter.NewBlockGetter(config.G.BlockGetter.SubHeader, wsEthClient, cache, sequencerForBlockGetter, config.G.BlockGetter.Retry.GetRetryParams())
 	startBlockNumber := blockGetter.GetStartBlockNumber(config.G.BlockGetter.StartBlockNumber)
 	if startBlockNumber == 0 {
-		log.Logger.Fatal("start block number is zero")
+		logger.G.Fatal("start block number is zero")
 	}
 
 	sequencerForBlockGetter.Init(startBlockNumber)
@@ -151,23 +151,23 @@ func main() {
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		sig := <-sigChan
-		log.Logger.Info("receive signal", zap.String("signal", sig.String()))
+		logger.G.Info("receive signal", zap.String("signal", sig.String()))
 		blockGetter.Stop()
 	}()
 
-	var blockCtx *types.ParseBlockContext
+	var blockCtx *types.BlockCtx
 	for {
 		blockCtx = blockGetter.Next()
 		if blockCtx == nil {
-			log.Logger.Info("no more block to parse")
+			logger.G.Info("no more block to parse")
 			blockParser.Stop()
 			break
 		}
 		blockParser.ParseBlockAsync(blockCtx)
 	}
 
-	log.Logger.Info("wait all block commited")
+	logger.G.Info("wait all block commited")
 	wg.Wait()
-	log.Logger.Info("all block commited")
-	log.Logger.Sync()
+	logger.G.Info("all block commited")
+	logger.G.Sync()
 }

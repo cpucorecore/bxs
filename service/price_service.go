@@ -2,7 +2,7 @@ package service
 
 import (
 	"bxs/cache"
-	"bxs/log"
+	"bxs/logger"
 	"bxs/metrics"
 	"bxs/types"
 	"context"
@@ -45,7 +45,7 @@ func NewPriceService(
 	if poolSize > 0 {
 		workPool, err = ants.NewPool(poolSize)
 		if err != nil {
-			log.Logger.Fatal("ants pool(BlockGetter) init err", zap.Error(err))
+			logger.G.Fatal("ants pool(BlockGetter) init err", zap.Error(err))
 		}
 	}
 
@@ -62,7 +62,7 @@ func NewPriceService(
 	if !fromChain {
 		p, ts, err := ps.priceGetter.GetLatest()
 		if err != nil {
-			log.Logger.Fatal("get latest price", zap.Error(err))
+			logger.G.Fatal("get latest price", zap.Error(err))
 		}
 		ps.updatePrice(p, ts)
 	}
@@ -83,7 +83,7 @@ func (ps *priceService) Start(startBlockNumber uint64) {
 			for {
 				p, t, err := ps.priceGetter.GetLatest()
 				if err != nil {
-					log.Logger.Error("get latest price err", zap.Error(err))
+					logger.G.Error("get latest price err", zap.Error(err))
 					time.Sleep(time.Second)
 					continue
 				}
@@ -104,7 +104,7 @@ func (ps *priceService) Start(startBlockNumber uint64) {
 		for {
 			headerBlockNumber, err := ps.ethClient.BlockNumber(context.Background())
 			if err != nil {
-				log.Logger.Error("ethClient.BigIntHeight", zap.Error(err))
+				logger.G.Error("ethClient.BigIntHeight", zap.Error(err))
 				time.Sleep(time.Second)
 				continue
 			}
@@ -124,7 +124,7 @@ func (ps *priceService) GetPrice(blockNumber *big.Int) (decimal.Decimal, error) 
 		ps.lock.RLock()
 		defer ps.lock.RUnlock()
 		if time.Now().Unix()-ps.timestampSec > 600 {
-			log.Logger.Sugar().Fatal("price get slow 10min")
+			logger.G.Sugar().Fatal("price get slow 10min")
 		}
 		return ps.price, nil
 	}
@@ -142,7 +142,7 @@ func (ps *priceService) getPrice(blockNumber *big.Int) (decimal.Decimal, error) 
 
 	bnbPrice, err := ps.contractCaller.GetPriceByBlockNumber(blockNumber)
 	if err != nil {
-		log.Logger.Error("GetPriceByBlockNumber err", zap.Error(err), zap.Uint64("blockNumber", blockNumber.Uint64()))
+		logger.G.Error("GetPriceByBlockNumber err", zap.Error(err), zap.Uint64("blockNumber", blockNumber.Uint64()))
 		return types.ZeroDecimal, err
 	}
 

@@ -1,7 +1,7 @@
 package xlaunch
 
 import (
-	"bxs/log"
+	"bxs/logger"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"
@@ -22,13 +22,13 @@ var (
 func init() {
 	factoryAbi, err := abi.JSON(strings.NewReader(FactoryAbiJson))
 	if err != nil {
-		log.Logger.Fatal("Failed to parse factory ABI", zap.Error(err))
+		logger.G.Fatal("Failed to parse factory ABI", zap.Error(err))
 	}
 	FactoryAbi = &factoryAbi
 
 	pairCreatedEvent, err := factoryAbi.EventByID(CreatedTopic0)
 	if err != nil {
-		log.Logger.Fatal("Failed to find PairCreatedTopic0", zap.Error(err))
+		logger.G.Fatal("Failed to find PairCreatedTopic0", zap.Error(err))
 	}
 	CreatedEvent = pairCreatedEvent
 }

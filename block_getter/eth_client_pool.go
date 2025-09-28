@@ -1,7 +1,7 @@
 package block_getter
 
 import (
-	"bxs/log"
+	"bxs/logger"
 	"context"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"go.uber.org/zap"
@@ -68,11 +68,11 @@ func (w *ClientWrap) connect() {
 	for {
 		client, err := ethclient.Dial(w.url)
 		if err != nil {
-			log.Logger.Info("Err: dial Ethereum err", zap.Int("id", w.id), zap.String("url", w.url), zap.Error(err))
+			logger.G.Info("Err: dial Ethereum err", zap.Int("id", w.id), zap.String("url", w.url), zap.Error(err))
 			time.Sleep(time.Second * 2)
 			continue
 		}
-		log.Logger.Info("dial Ethereum ok", zap.Int("id", w.id))
+		logger.G.Info("dial Ethereum ok", zap.Int("id", w.id))
 		w.client = client
 		break
 	}
@@ -96,7 +96,7 @@ func (w *ClientWrap) checkHealthy() bool {
 		return true
 	}
 
-	log.Logger.Info("check health err", zap.Int("id", w.id), zap.Error(err))
+	logger.G.Info("check health err", zap.Int("id", w.id), zap.Error(err))
 	w.setStatus(StatusCheckFailed)
 	return false
 }

@@ -2,7 +2,7 @@ package types
 
 import (
 	"bxs/chain_params"
-	"bxs/log"
+	"bxs/logger"
 	"errors"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
@@ -16,15 +16,15 @@ var (
 	txIndexOutOfRange = errors.New("txIndex out of range")
 )
 
-type BlockHeightTime struct {
+type HeightTime struct {
 	Height       uint64
 	Timestamp    uint64
 	HeightBigInt *big.Int
 	Time         time.Time
 }
 
-func GetBlockHeightTime(header *ethtypes.Header) *BlockHeightTime {
-	return &BlockHeightTime{
+func GetBlockHeightTime(header *ethtypes.Header) *HeightTime {
+	return &HeightTime{
 		HeightBigInt: header.Number,
 		Height:       header.Number.Uint64(),
 		Timestamp:    header.Time,
@@ -32,30 +32,30 @@ func GetBlockHeightTime(header *ethtypes.Header) *BlockHeightTime {
 	}
 }
 
-type ParseBlockContext struct {
+type BlockCtx struct {
 	// input
-	Block            *ethtypes.Block
-	Transactions     []*ethtypes.Transaction
-	TransactionsLen  uint
-	BlockReceipts    []*ethtypes.Receipt
-	HeightTime       *BlockHeightTime
+	HeightTime       *HeightTime
 	NativeTokenPrice decimal.Decimal
+	TransactionsLen  uint
+	Transactions     []*ethtypes.Transaction
+	Receipts         []*ethtypes.Receipt
 	TxSenders        []*common.Address
+
 	// output
 	BlockResult *BlockResult
 }
 
-func (c *ParseBlockContext) GetSequence() uint64 {
+func (c *BlockCtx) GetSequence() uint64 {
 	return c.HeightTime.Height
 }
 
-func (c *ParseBlockContext) GetTxSender(txIndex uint) (common.Address, error) {
+func (c *BlockCtx) GetTxSender(txIndex uint) (common.Address, error) {
 	if c.TxSenders[txIndex] != nil {
 		return *c.TxSenders[txIndex], nil
 	}
 
 	if txIndex >= c.TransactionsLen {
-		log.Logger.Info("Waring: txIndex out of range",
+		logger.G.Info("Waring: txIndex out of range",
 			zap.Uint64("height", c.HeightTime.Height),
 			zap.Any("transactions length", c.TransactionsLen),
 			zap.Uint("txIndex", txIndex),

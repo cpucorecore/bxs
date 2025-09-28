@@ -2,7 +2,7 @@ package service
 
 import (
 	"bxs/config"
-	"bxs/log"
+	"bxs/logger"
 	"bxs/metrics"
 	"bxs/types"
 	"encoding/json"
@@ -39,7 +39,7 @@ func NewKafkaSender(conf *config.KafkaConf) KafkaSender {
 
 	asyncProducer, err := sarama.NewAsyncProducer(conf.Brokers, sc)
 	if err != nil {
-		log.Logger.Fatal("kafka NewAsyncProducer err", zap.Error(err))
+		logger.G.Fatal("kafka NewAsyncProducer err", zap.Error(err))
 	}
 	client.asyncProducer = asyncProducer
 	client.processErrors()
@@ -57,10 +57,10 @@ func (s *kafkaSender) processErrors() {
 		for {
 			err, ok := <-errCh
 			if !ok {
-				log.Logger.Info("kafka asyncProducer error @ done", zap.Error(err))
+				logger.G.Info("kafka asyncProducer error @ done", zap.Error(err))
 				return
 			}
-			log.Logger.Info("kafka asyncProducer error", zap.Error(err))
+			logger.G.Info("kafka asyncProducer error", zap.Error(err))
 		}
 	}()
 }

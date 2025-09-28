@@ -3,7 +3,7 @@ package block_getter
 import (
 	"bxs/cache"
 	"bxs/config"
-	"bxs/log"
+	"bxs/logger"
 	"bxs/metrics"
 	"bxs/sequencer"
 	"bxs/types"
@@ -27,7 +27,7 @@ type BlockGetter interface {
 	StartDispatch(startBlockNumber uint64)
 	Stop()
 	GetBlockAsync(blockNumber uint64)
-	Next() *types.ParseBlockContext
+	Next() *types.BlockCtx
 }
 
 type blockGetter struct {
@@ -36,7 +36,7 @@ type blockGetter struct {
 	wsEthClient     *ethclient.Client
 	ethClientPool   EthClientPool
 	inputQueue      chan uint64
-	outputBuffer    chan *types.ParseBlockContext
+	outputBuffer    chan *types.BlockCtx
 	workPool        *ants.Pool
 	cache           cache.BlockCache
 	stopped         SafeVar[bool]
@@ -55,7 +55,7 @@ func NewBlockGetter(
 ) BlockGetter {
 	workPool, err := ants.NewPool(config.G.BlockGetter.PoolSize)
 	if err != nil {
-		log.Logger.Fatal("ants pool(BlockGetter) init err", zap.Error(err))
+		logger.G.Fatal("ants pool(BlockGetter) init err", zap.Error(err))
 	}
 
 	ethClientPool_ := NewEthClientPool(config.G.Chain.WsEndpoint, config.G.BlockGetter.PoolSize)
@@ -66,7 +66,7 @@ func NewBlockGetter(
 		wsEthClient:     wsEthClient,
 		ethClientPool:   ethClientPool_,
 		inputQueue:      make(chan uint64, config.G.BlockGetter.QueueSize),
-		outputBuffer:    make(chan *types.ParseBlockContext, 10),
+		outputBuffer:    make(chan *types.BlockCtx, 10),
 		workPool:        workPool,
 		cache:           cache,
 		blockHeaderChan: make(chan *ethtypes.Header, 100),
@@ -76,10 +76,10 @@ func NewBlockGetter(
 }
 
 func (bg *blockGetter) Commit(x sequencer.Sequenceable) {
-	bg.outputBuffer <- x.(*types.ParseBlockContext)
+	bg.outputBuffer <- x.(*types.BlockCtx)
 }
 
-func (bg *blockGetter) getBlock(blockNumber uint64) (*types.ParseBlockContext, error) {
+func (bg *blockGetter) getBlock(blockNumber uint64) (*types.BlockCtx, error) {
 	var (
 		block          *ethtypes.Block
 		blockReceipts  []*ethtypes.Receipt
@@ -120,18 +120,17 @@ func (bg *blockGetter) getBlock(blockNumber uint64) (*types.ParseBlockContext, e
 	metrics.BlockDelay.Observe(time.Now().Sub(time.Unix((int64)(block.Time()), 0)).Seconds())
 
 	transactions := block.Transactions()
-	return &types.ParseBlockContext{
-		Block:           block,
+	return &types.BlockCtx{
 		Transactions:    transactions,
 		TransactionsLen: uint(len(transactions)),
-		BlockReceipts:   blockReceipts,
+		Receipts:        blockReceipts,
 		HeightTime:      types.GetBlockHeightTime(block.Header()),
 		TxSenders:       make([]*common.Address, block.Transactions().Len()),
 	}, nil
 }
 
-func (bg *blockGetter) getBlockWithRetry(blockNumber uint64) (*types.ParseBlockContext, error) {
-	return retry.DoWithData(func() (*types.ParseBlockContext, error) {
+func (bg *blockGetter) getBlockWithRetry(blockNumber uint64) (*types.BlockCtx, error) {
+	return retry.DoWithData(func() (*types.BlockCtx, error) {
 		return bg.getBlock(blockNumber)
 	}, bg.retryParams.Attempts, bg.retryParams.Delay)
 }
@@ -140,7 +139,7 @@ func (bg *blockGetter) GetBlockAsync(blockNumber uint64) {
 	bg.inputQueue <- blockNumber
 }
 
-func (bg *blockGetter) Next() *types.ParseBlockContext {
+func (bg *blockGetter) Next() *types.BlockCtx {
 	return <-bg.outputBuffer
 }
 
@@ -152,7 +151,7 @@ func (bg *blockGetter) Start() {
 			select {
 			case blockNumber, ok := <-bg.inputQueue:
 				if !ok {
-					log.Logger.Info("block inputQueue is closed")
+					logger.G.Info("block inputQueue is closed")
 					break tagFor
 				}
 
@@ -160,14 +159,14 @@ func (bg *blockGetter) Start() {
 				bg.workPool.Submit(func() {
 					defer wg.Done()
 
-					log.Logger.Debug("get block start", zap.Uint64("block_number", blockNumber))
+					logger.G.Debug("get block start", zap.Uint64("block_number", blockNumber))
 					bw, err := bg.getBlockWithRetry(blockNumber)
 					if err != nil {
-						log.Logger.Error("get block err", zap.Uint64("blockNumber", blockNumber), zap.Error(err))
+						logger.G.Error("get block err", zap.Uint64("blockNumber", blockNumber), zap.Error(err))
 						return
 					}
 
-					log.Logger.Debug("get block success", zap.Uint64("blockNumber", blockNumber))
+					logger.G.Debug("get block success", zap.Uint64("blockNumber", blockNumber))
 					metrics.BlockQueueSize.Set(float64(len(bg.outputBuffer)))
 					bg.blockSequencer.CommitWithSequence(bw, bg)
 				})
@@ -175,7 +174,7 @@ func (bg *blockGetter) Start() {
 		}
 
 		wg.Wait()
-		log.Logger.Info("all block getter task finish")
+		logger.G.Info("all block getter task finish")
 		close(bg.outputBuffer)
 	}()
 }
@@ -192,7 +191,7 @@ func (bg *blockGetter) GetStartBlockNumber(startBlockNumber uint64) uint64 {
 
 	newestBlockNumber, err := bg.wsEthClient.BlockNumber(bg.ctx)
 	if err != nil {
-		log.Logger.Fatal("ethClient.BlockNumber() err", zap.Error(err))
+		logger.G.Fatal("ethClient.BlockNumber() err", zap.Error(err))
 	}
 
 	return newestBlockNumber
@@ -223,11 +222,11 @@ func (bg *blockGetter) reconnectWithBackoff() (ethereum.Subscription, <-chan err
 	for {
 		sub, errChan, err := bg.subscribeNewHead()
 		if err == nil {
-			log.Logger.Info("WebSocket reconnected successfully")
+			logger.G.Info("WebSocket reconnected successfully")
 			return sub, errChan
 		}
 
-		log.Logger.Error("WebSocket reconnect failed",
+		logger.G.Error("WebSocket reconnect failed",
 			zap.Error(err),
 			zap.Duration("nextRetry", retryDelay),
 		)
@@ -245,12 +244,12 @@ func (bg *blockGetter) startQueryNewHead() {
 		for {
 			bn, err := bg.wsEthClient.BlockNumber(bg.ctx)
 			if err != nil {
-				log.Logger.Error("ethClient.BlockNumber() err", zap.Error(err))
+				logger.G.Error("ethClient.BlockNumber() err", zap.Error(err))
 				time.Sleep(time.Second)
 				continue
 			}
 
-			log.Logger.Debug("New block", zap.Uint64("height", bn))
+			logger.G.Debug("New block", zap.Uint64("height", bn))
 			bg.setHeaderHeight(bn)
 			metrics.NewestHeight.Set(float64(bn))
 			time.Sleep(time.Millisecond * 100)
@@ -261,13 +260,13 @@ func (bg *blockGetter) startQueryNewHead() {
 func (bg *blockGetter) startSubscribeNewHead() {
 	headerHeight, err := bg.wsEthClient.BlockNumber(bg.ctx)
 	if err != nil {
-		log.Logger.Fatal("HeightBigInt() err", zap.Error(err))
+		logger.G.Fatal("HeightBigInt() err", zap.Error(err))
 	}
 	bg.setHeaderHeight(headerHeight)
 
 	sub, errChan, err := bg.subscribeNewHead()
 	if err != nil {
-		log.Logger.Fatal("subscribeNewHead() err", zap.Error(err))
+		logger.G.Fatal("subscribeNewHead() err", zap.Error(err))
 	}
 
 	go func() {
@@ -289,11 +288,11 @@ func (bg *blockGetter) startSubscribeNewHead() {
 		for {
 			select {
 			case err = <-errChan:
-				log.Logger.Error("WebSocket error", zap.Error(err))
+				logger.G.Error("WebSocket error", zap.Error(err))
 				resetConnection()
 			case blockHeader := <-bg.blockHeaderChan:
 				height := blockHeader.Number.Uint64()
-				log.Logger.Info("New block", zap.Uint64("height", height))
+				logger.G.Info("New block", zap.Uint64("height", height))
 				bg.setHeaderHeight(height)
 				metrics.NewestHeight.Set(float64(height))
 
@@ -304,7 +303,7 @@ func (bg *blockGetter) startSubscribeNewHead() {
 				}
 				noBlockTimeout.Reset(10 * time.Second)
 			case <-noBlockTimeout.C:
-				log.Logger.Warn("No new blocks for 10s, reconnect WebSocket")
+				logger.G.Warn("No new blocks for 10s, reconnect WebSocket")
 				resetConnection()
 			}
 		}
@@ -339,7 +338,7 @@ func (bg *blockGetter) StartDispatch(startBlockNumber uint64) {
 
 			stopped, nextBlockHeight := bg.dispatchRange(cur, headerHeight)
 			if stopped {
-				log.Logger.Info("dispatch interrupted", zap.Uint64("nextBlockHeight", nextBlockHeight))
+				logger.G.Info("dispatch interrupted", zap.Uint64("nextBlockHeight", nextBlockHeight))
 				bg.doStop()
 				return
 			}

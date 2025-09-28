@@ -1,7 +1,7 @@
 package v3
 
 import (
-	"bxs/log"
+	"bxs/logger"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"
@@ -31,25 +31,25 @@ var (
 func init() {
 	poolAbi, err := abi.JSON(strings.NewReader(PoolAbiJson))
 	if err != nil {
-		log.Logger.Fatal("load abi[PancakeV3Pool] err", zap.Error(err))
+		logger.G.Fatal("load abi[PancakeV3Pool] err", zap.Error(err))
 	}
 	PoolAbi = &poolAbi
 
 	swapEvent, err := poolAbi.EventByID(SwapTopic0)
 	if err != nil {
-		log.Logger.Fatal("load abi[PancakeV3Pool] event[swap] err", zap.Error(err))
+		logger.G.Fatal("load abi[PancakeV3Pool] event[swap] err", zap.Error(err))
 	}
 	SwapEvent = swapEvent
 
 	mintEvent, err := poolAbi.EventByID(MintTopic0)
 	if err != nil {
-		log.Logger.Fatal("load abi[PancakeV3Pool] event[mint] err", zap.Error(err))
+		logger.G.Fatal("load abi[PancakeV3Pool] event[mint] err", zap.Error(err))
 	}
 	MintEvent = mintEvent
 
 	burnEvent, err := poolAbi.EventByID(BurnTopic0)
 	if err != nil {
-		log.Logger.Fatal("load abi[PancakeV3Pool] event[burn] err", zap.Error(err))
+		logger.G.Fatal("load abi[PancakeV3Pool] event[burn] err", zap.Error(err))
 	}
 	BurnEvent = burnEvent
 }

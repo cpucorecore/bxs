@@ -1,7 +1,7 @@
 package xlaunch
 
 import (
-	"bxs/log"
+	"bxs/logger"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"
@@ -25,19 +25,19 @@ var (
 func init() {
 	pairAbi, err := abi.JSON(strings.NewReader(PairAbiJson))
 	if err != nil {
-		log.Logger.Fatal("Failed to parse pair ABI", zap.Error(err))
+		logger.G.Fatal("Failed to parse pair ABI", zap.Error(err))
 	}
 	PairAbi = &pairAbi
 
 	buyEvent, err := pairAbi.EventByID(BuyTopic0)
 	if err != nil {
-		log.Logger.Fatal("Failed to find BuyEvent", zap.Error(err))
+		logger.G.Fatal("Failed to find BuyEvent", zap.Error(err))
 	}
 	BuyEvent = buyEvent
 
 	sellEvent, err := pairAbi.EventByID(SellTopic0)
 	if err != nil {
-		log.Logger.Fatal("Failed to find SellEvent", zap.Error(err))
+		logger.G.Fatal("Failed to find SellEvent", zap.Error(err))
 	}
 	SellEvent = sellEvent
 }

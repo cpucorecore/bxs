@@ -1,7 +1,7 @@
 package event_parser
 
 import (
-	"bxs/log"
+	"bxs/logger"
 	"bxs/repository/orm"
 	"bxs/types"
 	"github.com/shopspring/decimal"
@@ -50,7 +50,7 @@ func (e *SwapEvent) GetTx(nativeTokenPrice decimal.Decimal) *orm.Tx {
 			tx.Event = types.Sell
 		}
 	} else {
-		log.Logger.Warn("wrong pancake v2 swap event", zap.Any("event", e))
+		logger.G.Warn("wrong pancake v2 swap event", zap.Any("event", e))
 	}
 
 	tx.AmountUsd, tx.PriceUsd = types.CalcAmountAndPrice(nativeTokenPrice, tx.Token0Amount, tx.Token1Amount, e.Pair.Token1.Address)

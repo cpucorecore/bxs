@@ -3,7 +3,7 @@ package service
 import (
 	"bxs/cache"
 	"bxs/chain_params"
-	"bxs/log"
+	"bxs/logger"
 	"bxs/metrics"
 	"bxs/types"
 	"context"
@@ -212,7 +212,7 @@ func (s *pairService) doGetPair(pairAddress common.Address) *types.Pair {
 	now := time.Now()
 	token0Addr, err := s.contractCaller.CallToken(&pairAddress)
 	if err != nil {
-		log.Logger.Info("Err: CallToken err, this pair will filtered",
+		logger.G.Info("Err: CallToken err, this pair will filtered",
 			zap.Error(err),
 			zap.String("pair address", pairAddress.String()),
 		)
