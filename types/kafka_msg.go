@@ -6,20 +6,20 @@ import (
 )
 
 type MigratedPool struct {
-	Pool  common.Address
-	Token common.Address
+	Pool  common.Address `json:"pool"`
+	Token common.Address `json:"token"`
 }
 
 type BlockInfo struct {
-	Height           uint64
-	Timestamp        uint64
-	NativeTokenPrice string
-	Txs              []*orm.Tx
-	MigratedPools    []*MigratedPool
-	Actions          []*orm.Action
-	NewTokens        []*orm.Token
-	NewPairs         []*orm.Pair
-	PoolUpdates      []*PoolUpdate
+	Height           uint64          `json:"height"`
+	Timestamp        uint64          `json:"timestamp"`
+	NativeTokenPrice string          `json:"native_token_price"`
+	Txs              []*orm.Tx       `json:"txs"`
+	MigratedPools    []*MigratedPool `json:"migrated_pools"`
+	Actions          []*orm.Action   `json:"actions"`
+	NewTokens        []*orm.Token    `json:"new_tokens"`
+	NewPairs         []*orm.Pair     `json:"new_pairs"`
+	PoolUpdates      []*PoolUpdate   `json:"pool_updates"`
 }
 
 func (bi *BlockInfo) UsefulInfo() bool {

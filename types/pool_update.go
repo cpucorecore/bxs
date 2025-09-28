@@ -7,12 +7,12 @@ import (
 )
 
 type PoolUpdate struct {
-	LogIndex uint
-	Address  common.Address
-	Token0   common.Address
-	Token1   common.Address
-	Amount0  decimal.Decimal
-	Amount1  decimal.Decimal
+	LogIndex uint            `json:"log_index"`
+	Address  common.Address  `json:"address"`
+	Token0   common.Address  `json:"token0"`
+	Token1   common.Address  `json:"token1"`
+	Amount0  decimal.Decimal `json:"amount0"`
+	Amount1  decimal.Decimal `json:"amount1"`
 }
 
 func (u *PoolUpdate) Equal(tx *PoolUpdate) bool {

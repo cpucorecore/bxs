@@ -6,17 +6,17 @@ import (
 )
 
 type Pair struct {
-	Name      string
-	Address   string
-	Token0    string
-	Token1    string
-	ChainId   int
-	Reserve0  decimal.Decimal
-	Reserve1  decimal.Decimal
-	Block     uint64
-	BlockAt   time.Time
-	Program   string
-	CreatedAt time.Time `gorm:"autoCreateTime"`
+	Name      string          `json:"name"`
+	Address   string          `json:"address"`
+	Token0    string          `json:"token0"`
+	Token1    string          `json:"token1"`
+	ChainId   int             `json:"chain_id"`
+	Reserve0  decimal.Decimal `json:"reserve0"`
+	Reserve1  decimal.Decimal `json:"reserve1"`
+	Block     uint64          `json:"block"`
+	BlockAt   time.Time       `json:"block_at"`
+	Program   string          `json:"program"`
+	CreatedAt time.Time       `gorm:"autoCreateTime" json:"created_at,omitempty"`
 }
 
 func (p *Pair) TableName() string {

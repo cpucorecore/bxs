@@ -7,18 +7,18 @@ import (
 )
 
 type Action struct {
-	Id           uuid.UUID `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()"`
-	Maker        string
-	Token        string
-	Pair         string
-	Action       string
-	TxHash       string
-	Creator      string
-	Block        uint64
-	BlockAt      time.Time
-	Token0Amount decimal.Decimal `gorm:"-"`
-	Token1Amount decimal.Decimal `gorm:"-"`
-	CreatedAt    time.Time       `gorm:"autoCreateTime"`
+	Id           uuid.UUID       `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()" json:"id,omitempty"`
+	Maker        string          `json:"maker"`
+	Token        string          `json:"token"`
+	Pair         string          `json:"pair"`
+	Action       string          `json:"action"`
+	TxHash       string          `json:"tx_hash"`
+	Creator      string          `json:"creator"`
+	Block        uint64          `json:"block"`
+	BlockAt      time.Time       `json:"block_at"`
+	Token0Amount decimal.Decimal `gorm:"-" json:"token0_amount,omitempty"`
+	Token1Amount decimal.Decimal `gorm:"-" json:"token1_amount,omitempty"`
+	CreatedAt    time.Time       `gorm:"autoCreateTime" json:"created_at,omitempty"`
 }
 
 func (a *Action) TableName() string {

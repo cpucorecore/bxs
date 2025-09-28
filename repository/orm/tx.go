@@ -9,23 +9,23 @@ import (
 )
 
 type Tx struct {
-	Id            uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey;readonly"`
-	TxHash        string
-	Event         string
-	Token0Amount  decimal.Decimal
-	Token1Amount  decimal.Decimal
-	Maker         string
-	Token0Address string
-	Token1Address string
-	AmountUsd     decimal.Decimal
-	PriceUsd      decimal.Decimal
-	Block         uint64
-	BlockAt       time.Time
-	BlockIndex    uint
-	TxIndex       uint
-	PairAddress   string
-	Program       string
-	CreatedAt     time.Time `gorm:"autoCreateTime"`
+	Id            uuid.UUID       `gorm:"type:uuid;default:uuid_generate_v4();primaryKey;readonly" json:"id,omitempty"`
+	TxHash        string          `json:"tx_hash"`
+	Event         string          `json:"event"`
+	Token0Amount  decimal.Decimal `json:"token0Amount"`
+	Token1Amount  decimal.Decimal `json:"token1Amount"`
+	Maker         string          `json:"maker"`
+	Token0Address string          `json:"token0_address"`
+	Token1Address string          `json:"token1_address"`
+	AmountUsd     decimal.Decimal `json:"amount_usd"`
+	PriceUsd      decimal.Decimal `json:"price_usd"`
+	Block         uint64          `json:"block"`
+	BlockAt       time.Time       `json:"block_at"`
+	BlockIndex    uint            `json:"block_index"`
+	TxIndex       uint            `json:"tx_index"`
+	PairAddress   string          `json:"pair_address"`
+	Program       string          `json:"program"`
+	CreatedAt     time.Time       `gorm:"autoCreateTime" json:"created_at,omitempty"`
 }
 
 func (t *Tx) Equal(tx *Tx) bool {

@@ -5,21 +5,21 @@ import (
 )
 
 type Token struct {
-	Address     string
-	Creator     string
-	Name        string
-	Symbol      string
-	Decimal     int8
-	TotalSupply string
-	ChainId     int
-	Block       uint64
-	BlockAt     time.Time
-	Program     string
-	CreatedAt   time.Time `gorm:"autoCreateTime"`
-	MainPair    string
-	Telegram    string
-	Twitter     string
-	Website     string
+	Address     string    `json:"address"`
+	Creator     string    `json:"creator"`
+	Name        string    `json:"name"`
+	Symbol      string    `json:"symbol"`
+	Decimal     int8      `json:"decimal"`
+	TotalSupply string    `json:"total_supply"`
+	ChainId     int       `json:"chain_id"`
+	Block       uint64    `json:"block"`
+	BlockAt     time.Time `json:"block_at"`
+	Program     string    `json:"program"`
+	CreatedAt   time.Time `gorm:"autoCreateTime" json:"created_at,omitempty"`
+	MainPair    string    `json:"main_pair"`
+	Telegram    string    `json:"telegram"`
+	Twitter     string    `json:"twitter"`
+	Website     string    `json:"website"`
 }
 
 func (t *Token) TableName() string {
