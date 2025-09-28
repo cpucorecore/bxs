@@ -10,6 +10,7 @@ import (
 	"bxs/sequencer"
 	"bxs/service"
 	"bxs/types"
+	"encoding/json"
 	"fmt"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/panjf2000/ants/v2"
@@ -371,6 +372,9 @@ func (p *blockParser) commitBlockResult(blockResult *types.BlockResult) {
 			zap.Int("pairs", len(blockInfo.NewPairs)),
 			zap.Int("actions", len(blockInfo.Actions)),
 			zap.Int("txs", len(blockInfo.Txs)))
+
+		bytes, _ := json.Marshal(blockInfo)
+		logger.G.Sugar().Debugf("%s", string(bytes))
 	}
 
 	err = p.kafkaSender.Send(blockInfo)
