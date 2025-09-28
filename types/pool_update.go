@@ -2,15 +2,14 @@ package types
 
 import (
 	"bxs/util"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/shopspring/decimal"
 )
 
 type PoolUpdate struct {
 	LogIndex uint            `json:"log_index"`
-	Address  common.Address  `json:"address"`
-	Token0   common.Address  `json:"token0"`
-	Token1   common.Address  `json:"token1"`
+	Address  string          `json:"address"`
+	Token0   string          `json:"token0"`
+	Token1   string          `json:"token1"`
 	Amount0  decimal.Decimal `json:"amount0"`
 	Amount1  decimal.Decimal `json:"amount1"`
 }

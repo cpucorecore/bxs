@@ -50,9 +50,9 @@ func (e *SellEvent) GetPoolUpdate() *types.PoolUpdate {
 	a0, a1 := types.ParseAmountsByPair(e.TokensSold, e.NativeTokenRaised, e.Pair)
 	return &types.PoolUpdate{
 		LogIndex: e.EventCommon.LogIndex,
-		Address:  e.EventCommon.Pair.Address,
-		Token0:   e.EventCommon.Pair.Token0.Address,
-		Token1:   e.EventCommon.Pair.Token1.Address,
+		Address:  e.EventCommon.Pair.Address.String(),
+		Token0:   e.EventCommon.Pair.Token0.Address.String(),
+		Token1:   e.EventCommon.Pair.Token1.Address.String(),
 		Amount0:  a0,
 		Amount1:  a1,
 	}

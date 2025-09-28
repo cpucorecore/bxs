@@ -2,7 +2,6 @@ package types
 
 import (
 	"bxs/repository/orm"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/shopspring/decimal"
 	"time"
 )
@@ -30,7 +29,7 @@ func (br *BlockResult) AddTxResult(txResult *TxResult) {
 }
 
 func mergePoolUpdates(poolUpdates []*PoolUpdate) []*PoolUpdate {
-	pairAddress2PoolUpdate := make(map[common.Address]*PoolUpdate)
+	pairAddress2PoolUpdate := make(map[string]*PoolUpdate)
 	for _, poolUpdate := range poolUpdates {
 		poolUpdate_, ok := pairAddress2PoolUpdate[poolUpdate.Address]
 		if ok {

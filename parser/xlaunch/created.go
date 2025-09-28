@@ -112,9 +112,9 @@ func (e *CreatedEvent) CanGetPoolUpdate() bool {
 func (e *CreatedEvent) GetPoolUpdate() *types.PoolUpdate {
 	u := &types.PoolUpdate{
 		LogIndex: e.EventCommon.LogIndex,
-		Address:  e.EventCommon.Pair.Address,
-		Token0:   e.EventCommon.Pair.Token0.Address,
-		Token1:   e.EventCommon.Pair.Token1.Address,
+		Address:  e.EventCommon.Pair.Address.String(),
+		Token0:   e.EventCommon.Pair.Token0.Address.String(),
+		Token1:   e.EventCommon.Pair.Token1.Address.String(),
 	}
 	u.Amount0, u.Amount1 = types.ParseAmountsByPair(e.TokenInitAmount, e.BaseTokenInitAmount, e.Pair)
 	return u

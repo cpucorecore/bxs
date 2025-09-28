@@ -230,8 +230,8 @@ func (p *blockParser) parseTxReceipt(pbc *types.BlockCtx, receipt *ethtypes.Rece
 			if event.IsMigrated() {
 				p.cache.SetMigrateToken(event.GetPair().Token0.Address)
 				migratedPools = append(migratedPools, &types.MigratedPool{
-					Pool:  event.GetPair().Address,
-					Token: event.GetPair().Token0.Address,
+					Pool:  event.GetPair().Address.String(),
+					Token: event.GetPair().Token0.Address.String(),
 				})
 			}
 

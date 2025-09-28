@@ -2,12 +2,11 @@ package types
 
 import (
 	"bxs/repository/orm"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 type MigratedPool struct {
-	Pool  common.Address `json:"pool"`
-	Token common.Address `json:"token"`
+	Pool  string `json:"pool"`
+	Token string `json:"token"`
 }
 
 type BlockInfo struct {

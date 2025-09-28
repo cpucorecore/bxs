@@ -18,9 +18,9 @@ func (e *SyncEvent) CanGetPoolUpdate() bool {
 func (e *SyncEvent) GetPoolUpdate() *types.PoolUpdate {
 	pu := &types.PoolUpdate{
 		LogIndex: e.LogIndex,
-		Address:  e.ContractAddress,
-		Token0:   e.Pair.Token0.Address,
-		Token1:   e.Pair.Token1.Address,
+		Address:  e.ContractAddress.String(),
+		Token0:   e.Pair.Token0.Address.String(),
+		Token1:   e.Pair.Token1.Address.String(),
 	}
 
 	pu.Amount0, pu.Amount1 = types.ParseAmountsByPair(e.amount0Wei, e.amount1Wei, e.Pair)
