@@ -15,7 +15,7 @@ var (
 )
 
 type TopicRouter interface {
-	Parse(ethLog *ethtypes.Log) (types.Event, error)
+	Route(ethLog *ethtypes.Log) (types.Event, error)
 }
 
 type topicRouter struct {
@@ -33,7 +33,7 @@ func NewTopicRouter() TopicRouter {
 	return r
 }
 
-func (p *topicRouter) Parse(ethLog *ethtypes.Log) (types.Event, error) {
+func (p *topicRouter) Route(ethLog *ethtypes.Log) (types.Event, error) {
 	eventParser, ok := p.topic2EventParser[ethLog.Topics[0]]
 	if !ok {
 		return nil, ErrParserNotFound

@@ -37,9 +37,8 @@ type BlockGetterConf struct {
 }
 
 type BlockHandlerConf struct {
-	PoolSize        int `json:"pool_size"`
-	ParseTxPoolSize int `json:"parse_tx_pool_size"`
-	QueueSize       int `json:"queue_size"`
+	PoolSize  int `json:"pool_size"`
+	QueueSize int `json:"queue_size"`
 }
 
 type RetryConf struct {
@@ -144,9 +143,8 @@ var (
 			SubHeader: false,
 		},
 		BlockHandler: &BlockHandlerConf{
-			PoolSize:        1,
-			ParseTxPoolSize: 1,
-			QueueSize:       1,
+			PoolSize:  1,
+			QueueSize: 1,
 		},
 		EnableSequencer: true,
 		PriceService: &PriceServiceConf{

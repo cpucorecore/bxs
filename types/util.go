@@ -6,13 +6,13 @@ import (
 	"math/big"
 )
 
-func ParseAmountsByPair(token0AmountWei, token1AmountWei *big.Int, pair *Pair) (token0Amount, token1Amount decimal.Decimal) {
+func ParseAmount(a0Wei, a1Wei *big.Int, pair *Pair) (a0, a1 decimal.Decimal) {
 	if !pair.TokenReversed {
-		token0Amount = decimal.NewFromBigInt(token0AmountWei, -(int32)(pair.Token0.Decimal))
-		token1Amount = decimal.NewFromBigInt(token1AmountWei, -(int32)(pair.Token1.Decimal))
+		a0 = decimal.NewFromBigInt(a0Wei, -(int32)(pair.Token0.Decimal))
+		a1 = decimal.NewFromBigInt(a1Wei, -(int32)(pair.Token1.Decimal))
 	} else {
-		token0Amount = decimal.NewFromBigInt(token1AmountWei, -(int32)(pair.Token0.Decimal))
-		token1Amount = decimal.NewFromBigInt(token0AmountWei, -(int32)(pair.Token1.Decimal))
+		a0 = decimal.NewFromBigInt(a1Wei, -(int32)(pair.Token0.Decimal))
+		a1 = decimal.NewFromBigInt(a0Wei, -(int32)(pair.Token1.Decimal))
 	}
 	return
 }

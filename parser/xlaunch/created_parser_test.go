@@ -36,7 +36,7 @@ func TestCreated(t *testing.T) {
 			Symbol:   "T",
 			Decimals: 18,
 		},
-		Token1Core:  types.NativeTokenCore,
+		Token1Core:  types.NativeTokenTinyInfo,
 		InitAmount0: token0InitAmount,
 		InitAmount1: token1InitAmount,
 		Block:       65762817,

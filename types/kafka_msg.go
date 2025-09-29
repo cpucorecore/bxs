@@ -9,7 +9,7 @@ type MigratedPool struct {
 	Token string `json:"token"`
 }
 
-type BlockInfo struct {
+type KafkaMsg struct {
 	Height           uint64          `json:"height"`
 	Timestamp        uint64          `json:"timestamp"`
 	NativeTokenPrice string          `json:"native_token_price"`
@@ -21,7 +21,7 @@ type BlockInfo struct {
 	PoolUpdates      []*PoolUpdate   `json:"pool_updates"`
 }
 
-func (bi *BlockInfo) UsefulInfo() bool {
+func (bi *KafkaMsg) UsefulInfo() bool {
 	return len(bi.Txs) != 0 ||
 		len(bi.NewTokens) != 0 ||
 		len(bi.MigratedPools) != 0 ||

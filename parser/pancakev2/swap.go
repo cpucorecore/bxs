@@ -36,14 +36,14 @@ func (e *SwapEvent) GetTx(nativeTokenPrice decimal.Decimal) *orm.Tx {
 	}
 
 	if e.Amount0InWei.Cmp(types.ZeroBigInt) > 0 {
-		tx.Token0Amount, tx.Token1Amount = types.ParseAmountsByPair(e.Amount0InWei, e.Amount1OutWei, e.Pair)
+		tx.Token0Amount, tx.Token1Amount = types.ParseAmount(e.Amount0InWei, e.Amount1OutWei, e.Pair)
 		if !e.Pair.TokenReversed {
 			tx.Event = types.Sell
 		} else {
 			tx.Event = types.Buy
 		}
 	} else if e.Amount1InWei.Cmp(types.ZeroBigInt) > 0 {
-		tx.Token0Amount, tx.Token1Amount = types.ParseAmountsByPair(e.Amount0OutWei, e.Amount1InWei, e.Pair)
+		tx.Token0Amount, tx.Token1Amount = types.ParseAmount(e.Amount0OutWei, e.Amount1InWei, e.Pair)
 		if !e.Pair.TokenReversed {
 			tx.Event = types.Buy
 		} else {

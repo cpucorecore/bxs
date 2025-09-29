@@ -13,6 +13,10 @@ const (
 )
 
 var (
+	xLaunchTokenDecimal = int8(18)
+)
+
+var (
 	createdEventParser = &CreatedEventParser{
 		pcommon.TopicUnpacker{
 			Topic: xlaunch.CreatedTopic0,

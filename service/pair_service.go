@@ -146,7 +146,7 @@ func (s *pairService) getPairTokens(pair *types.Pair) *types.PairWrap {
 	}
 
 	pair.Token0 = token0.GetTokenTinyInfo()
-	pair.Token1 = types.NativeTokenCore
+	pair.Token1 = types.NativeTokenTinyInfo
 
 	pairWrap.NewToken0 = !fromCache
 	pairWrap.NewToken1 = false

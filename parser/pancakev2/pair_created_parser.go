@@ -18,8 +18,12 @@ type PairCreatedEventParser struct {
 	pcommon.TopicUnpacker
 }
 
+func checkFactory(address common.Address) bool {
+	return types.IsSameAddress(address, chain_params.G.PancakeV2FactoryAddress)
+}
+
 func (o *PairCreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
-	if !types.IsSameAddress(ethLog.Address, chain_params.G.PancakeV2FactoryAddress) {
+	if !checkFactory(ethLog.Address) {
 		return nil, ErrWrongFactory
 	}
 
@@ -39,7 +43,7 @@ func (o *PairCreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error
 		return nil, ErrNotWBNBPair
 	}
 
-	e.Token0, e.Token1, e.tokenReversed = types.OrderToken0Token1Address(e.Token0, e.Token1)
+	e.Token0, e.Token1, e.tokenReversed = types.OrderAddress(e.Token0, e.Token1)
 	e.Pair = &types.Pair{
 		Address: e.Address,
 		Token0: &types.TokenTinyInfo{

@@ -23,7 +23,7 @@ func (e *SyncEvent) GetPoolUpdate() *types.PoolUpdate {
 		Token1:   e.Pair.Token1.Address.String(),
 	}
 
-	pu.Amount0, pu.Amount1 = types.ParseAmountsByPair(e.amount0Wei, e.amount1Wei, e.Pair)
+	pu.Amount0, pu.Amount1 = types.ParseAmount(e.amount0Wei, e.amount1Wei, e.Pair)
 	return pu
 }
 

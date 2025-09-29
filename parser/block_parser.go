@@ -6,14 +6,12 @@ import (
 	"bxs/config"
 	"bxs/logger"
 	"bxs/metrics"
-	"bxs/repository/orm"
 	"bxs/sequencer"
 	"bxs/service"
 	"bxs/types"
 	"encoding/json"
 	"fmt"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/panjf2000/ants/v2"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"math/big"
@@ -24,84 +22,60 @@ import (
 type BlockParser interface {
 	Start(*sync.WaitGroup)
 	Stop()
-	ParseBlockAsync(bw *types.BlockCtx)
+	ParseBlockAsync(bw *types.BlockContext)
 }
 
 type blockParser struct {
-	inputQueue   chan *types.BlockCtx
-	workPool     *ants.Pool
 	cache        cache.Cache
 	sequencer    sequencer.Sequencer
-	outputQueue  chan *types.BlockCtx
 	priceService service.PriceService
-	pairService  service.PairService
 	topicRouter  TopicRouter
 	kafkaSender  service.KafkaSender
 	dbService    service.DBService
-	parseTxPool  *ants.Pool
+	inputQueue   chan *types.BlockContext
+	outputQueue  chan *types.BlockContext
 }
 
 func NewBlockParser(
 	cache cache.Cache,
 	sequencer sequencer.Sequencer,
 	priceService service.PriceService,
-	pairService service.PairService,
 	topicRouter TopicRouter,
 	kafkaSender service.KafkaSender,
 	dbService service.DBService,
 ) BlockParser {
-	workPool, err := ants.NewPool(config.G.BlockHandler.PoolSize)
-	if err != nil {
-		logger.G.Fatal("ants.NewPool err", zap.Error(err))
-	}
-
-	parseTxPool, err := ants.NewPool(config.G.BlockHandler.ParseTxPoolSize)
-	if err != nil {
-		logger.G.Fatal("ants.NewPool err", zap.Error(err))
-	}
-
 	return &blockParser{
-		inputQueue:   make(chan *types.BlockCtx, config.G.BlockHandler.QueueSize),
-		workPool:     workPool,
 		cache:        cache,
 		sequencer:    sequencer,
-		outputQueue:  make(chan *types.BlockCtx, config.G.BlockHandler.QueueSize),
 		priceService: priceService,
-		pairService:  pairService,
 		topicRouter:  topicRouter,
 		kafkaSender:  kafkaSender,
 		dbService:    dbService,
-		parseTxPool:  parseTxPool,
+		inputQueue:   make(chan *types.BlockContext, config.G.BlockHandler.QueueSize),
+		outputQueue:  make(chan *types.BlockContext, config.G.BlockHandler.QueueSize),
 	}
 }
 
 func (p *blockParser) Commit(x sequencer.Sequenceable) {
-	p.outputQueue <- x.(*types.BlockCtx)
+	p.outputQueue <- x.(*types.BlockContext)
 }
 
 func (p *blockParser) Start(waitGroup *sync.WaitGroup) {
-	p.startHandleBlockResult(waitGroup)
+	p.startCommitBlockResult(waitGroup)
 
 	go func() {
-		wg := &sync.WaitGroup{}
-	tagFor:
+	For:
 		for {
 			select {
-			case pbc, ok := <-p.inputQueue:
+			case bc, ok := <-p.inputQueue:
 				if !ok {
-					logger.G.Info("block handler inputQueue is closed")
-					break tagFor
+					logger.G.Info("block parser inputQueue is closed")
+					break For
 				}
-
-				wg.Add(1)
-				p.workPool.Submit(func() {
-					defer wg.Done()
-					p.parseBlock(pbc)
-				})
+				p.parseBlock(bc)
 			}
 		}
 
-		wg.Wait()
 		logger.G.Info("all block parse task finish")
 		p.doStop()
 	}()
@@ -111,11 +85,11 @@ func (p *blockParser) Stop() {
 	close(p.inputQueue)
 }
 
-func (p *blockParser) ParseBlockAsync(bw *types.BlockCtx) {
-	p.inputQueue <- bw
+func (p *blockParser) ParseBlockAsync(bc *types.BlockContext) {
+	p.inputQueue <- bc
 }
 
-func (p *blockParser) waitForNativeTokenPrice(blockNumber *big.Int, blockTimestamp uint64) decimal.Decimal {
+func (p *blockParser) getNativeTokenPrice(blockNumber *big.Int, blockTimestamp uint64) decimal.Decimal {
 	for {
 		price, err := p.priceService.GetPrice(blockNumber)
 		if err != nil {
@@ -126,118 +100,94 @@ func (p *blockParser) waitForNativeTokenPrice(blockNumber *big.Int, blockTimesta
 		return price
 	}
 }
-func (p *blockParser) parseTxReceipt(pbc *types.BlockCtx, receipt *ethtypes.Receipt) *types.TxResult {
-	sender, err := pbc.GetTxSender(receipt.TransactionIndex)
-	if err != nil {
-		logger.G.Fatal("get tx sender err",
-			zap.Error(err),
-			zap.Any("pbc", pbc),
-			zap.Any("receipt", receipt),
-		)
-	}
 
-	txResult := types.NewTxResult(sender, pbc.HeightTime.Time)
-	pairs := make([]*types.Pair, 0, 2)
-	tokens := make([]*types.Token, 0, 2)
-	migratedPools := make([]*types.MigratedPool, 0, 2)
+func (p *blockParser) parseTxReceipt(bc *types.BlockContext, receipt *ethtypes.Receipt) *types.TxResult {
+	tr := bc.NewTxResult(receipt.TransactionIndex)
 	for _, log := range receipt.Logs {
 		if len(log.Topics) == 0 {
 			continue
 		}
 
-		event, parseErr := p.topicRouter.Parse(log)
-		if parseErr != nil {
+		event, err := p.topicRouter.Route(log)
+		if err != nil {
 			continue
 		}
 
-		if event.IsCreated() {
-			// xlaunch
-			// save token
-			// save pair
-			// pool update
-			event.SetBlockTime(pbc.HeightTime.Time)
+		bc.DecorateEvent(event)
 
+		if event.IsCreated() { // xLaunch event: created
 			pair := event.GetPair()
 			token0 := event.GetToken0()
 			p.cache.SetPair(pair)
 			p.cache.SetToken(token0)
-			pairs = append(pairs, pair)
-			tokens = append(tokens, token0)
-			txResult.AddPoolUpdate(event.GetPoolUpdate())
+			tr.AddPair(pair)
+			tr.AddToken(token0)
+			tr.AddPoolUpdate(event.GetPoolUpdate())
 			continue
 		}
 
-		if event.IsPairCreated() {
-			// pancakev2
-			// get pair
-			// if filtered: continue
-
-			// query token cache(pair.token0)
-			// if token not exist, pair filtered, and update pair cache, continue
-
+		if event.IsPairCreated() { // pancakeV2 event: PairCreated
 			pair := event.GetPair()
 			token0, ok := p.cache.GetToken(pair.Token0.Address)
 			if !ok {
-				logger.G.Sugar().Infof("pair %s have no xlaunch token, ignore it, token0 %s", pair.Address, pair.Token0.Address)
+				logger.G.Sugar().Infof("pair %s has no xLaunch token, ignore it, token0 %s", pair.Address, pair.Token0.Address)
 				pair.Filtered = true
 				pair.FilterCode = types.FilterCodeNoXLaunchToken
-			} else {
-				pair.Token0 = &types.TokenTinyInfo{
-					Address: token0.Address,
-					Symbol:  token0.Symbol,
-					Decimal: token0.Decimals,
-				}
-				pair.Token1 = &types.TokenTinyInfo{
-					Address: chain_params.G.WBNBAddress,
-					Symbol:  "WBNB",
-					Decimal: 18,
-				}
-				txResult.AddPairCreatedEvent(event)
-				pairs = append(pairs, pair)
+				p.cache.SetPair(pair)
+				continue
 			}
 
+			pair.Token0.Symbol = token0.Symbol
+			pair.Token0.Decimal = token0.Decimals
+			pair.Token1.Symbol = types.WBNBSymbol
+			pair.Token1.Decimal = types.WBNBDecimal
 			p.cache.SetPair(pair)
+			tr.AddPairCreatedEvent(event)
+			tr.AddPair(pair)
 			continue
 		}
 
-		// xlaunch buy/sell
-		if event.IsBuyOrSell() {
+		if event.IsBuyOrSell() { // xLaunch event: buy/sell
 			pairAddr := event.GetPairAddress()
 			pair, ok := p.cache.GetPair(pairAddr)
 			if !ok {
-				logger.G.Sugar().Warnf("pool %s not cached, it should be", pairAddr)
-				pw := p.pairService.GetPair(pairAddr)
-				pair = pw.Pair
-				if pair == nil {
-					logger.G.Sugar().Fatalf("get pair %s fail", pairAddr)
-				}
-
-				if pair.Filtered {
-					logger.G.Sugar().Warnf("pair %s is filtered, filter code %d", pairAddr, pair.FilterCode)
-					continue
-				}
-
-				pairs = append(pairs, pair)
-				tokens = append(tokens, &types.Token{
-					Address:  pair.Token0.Address,
-					Symbol:   pair.Token0.Symbol,
-					Decimals: pair.Token0.Decimal,
-					Program:  types.ProtocolNameXLaunch,
-				})
+				logger.G.Sugar().Warnf("pool %s not cached", pairAddr)
+				continue
 			}
-			event.SetPair(pair)
 
 			if event.IsMigrated() {
-				p.cache.SetMigrateToken(event.GetPair().Token0.Address)
-				migratedPools = append(migratedPools, &types.MigratedPool{
-					Pool:  event.GetPair().Address.String(),
-					Token: event.GetPair().Token0.Address.String(),
+				p.cache.SetMigrateToken(pair.Token0.Address)
+				tr.AddMigratedPool(&types.MigratedPool{
+					Pool:  pairAddr.String(),
+					Token: pair.Token0.Address.String(),
 				})
 			}
 
-			txResult.AddPoolUpdate(event.GetPoolUpdate())
-			txResult.AddSwapEvent(event)
-		} else if event.IsSwap() {
+			event.SetPair(pair)
+			tr.AddPoolUpdate(event.GetPoolUpdate())
+			tr.AddSwapEvent(event)
+			continue
+		}
+
+		if event.IsSwap() { // pancakeV2 event Swap
+			pairAddr := event.GetPairAddress()
+			pair, ok := p.cache.GetPair(pairAddr)
+			if !ok {
+				logger.G.Sugar().Warnf("pair %s not cached, ignore it, tx hash %s", pairAddr, event.GetTxHash())
+				continue
+			}
+
+			if pair.Filtered {
+				logger.G.Sugar().Infof("pair %s is filtered, filter code %d, tx hash %s", event.GetPairAddress(), pair.FilterCode, event.GetTxHash())
+				continue
+			}
+
+			event.SetPair(pair)
+			tr.AddSwapEvent(event)
+			continue
+		}
+
+		if event.IsSync() { // pancakeV2 event Sync
 			pair, ok := p.cache.GetPair(event.GetPairAddress())
 			if !ok {
 				logger.G.Sugar().Warnf("pair %s not cached, ignore it, tx hash %s", event.GetPairAddress(), event.GetTxHash())
@@ -250,68 +200,57 @@ func (p *blockParser) parseTxReceipt(pbc *types.BlockCtx, receipt *ethtypes.Rece
 			}
 
 			event.SetPair(pair)
-			txResult.AddSwapEvent(event)
-		} else if event.IsSync() {
-			pair, ok := p.cache.GetPair(event.GetPairAddress())
-			if !ok {
-				logger.G.Sugar().Warnf("pair %s not cached, ignore it, tx hash %s", event.GetPairAddress(), event.GetTxHash())
-				continue
-			}
-
-			if pair.Filtered {
-				logger.G.Sugar().Infof("pair %s is filtered, filter code %d, tx hash %s", event.GetPairAddress(), pair.FilterCode, event.GetTxHash())
-				continue
-			}
-
-			event.SetPair(pair)
-			txResult.AddPoolUpdate(event.GetPoolUpdate())
+			tr.AddPoolUpdate(event.GetPoolUpdate())
 		}
 	}
 
-	txResult.SetPairs(pairs)
-	txResult.SetTokens(tokens)
-	txResult.SetMigratedPools(migratedPools)
-
-	p.processTxPairCreatedEvents(txResult)
-	return txResult
+	p.processTxPairCreatedEvents(tr)
+	return tr
 }
 
-func (p *blockParser) processTxPairCreatedEvents(txResult *types.TxResult) *types.TxResult {
-	actions := make([]*orm.Action, 0, 2)
-	for _, event := range txResult.PairCreatedEvents {
-		nonWBNBToken := event.GetNonWBNBToken()
-		if p.cache.MigrateTokenExist(nonWBNBToken) {
-			actions = append(actions, event.GetAction())
-			p.cache.DelMigrateToken(nonWBNBToken)
+func (p *blockParser) processTxPairCreatedEvents(tr *types.TxResult) *types.TxResult {
+	for _, event := range tr.PairCreatedEvents {
+		token0 := event.GetNonWBNBToken()
+		if p.cache.MigrateTokenExist(token0) {
+			tr.AddAction(event.GetAction())
+			p.cache.DelMigrateToken(token0)
 		}
 	}
-	txResult.SetActions(actions)
-	return txResult
+	return tr
 }
 
-func (p *blockParser) parseBlock(pbc *types.BlockCtx) {
-	pbc.NativeTokenPrice = p.waitForNativeTokenPrice(pbc.HeightTime.HeightBigInt, pbc.HeightTime.Timestamp)
+func (p *blockParser) preParseBlock(bc *types.BlockContext) {
+	bc.NativeTokenPrice = p.getNativeTokenPrice(bc.HeightTime.HeightBigInt, bc.HeightTime.Timestamp)
+
+	signer := ethtypes.MakeSigner(chain_params.G.ChainConfig, bc.HeightTime.HeightBigInt, bc.HeightTime.Timestamp)
+	for idx, tx := range bc.Transactions {
+		sender, err := ethtypes.Sender(signer, tx)
+		if err != nil {
+			logger.G.Sugar().Fatalf("get tx [%v] sender err [%s]", tx, err)
+		}
+		bc.Senders[idx] = sender
+	}
+}
+
+func (p *blockParser) parseBlock(bc *types.BlockContext) {
+	p.preParseBlock(bc)
 
 	now := time.Now()
-	br := types.NewBlockResult(pbc.HeightTime.Height, pbc.HeightTime.Timestamp, pbc.NativeTokenPrice)
-
-	for _, receipt := range pbc.Receipts {
+	for _, receipt := range bc.Receipts {
 		if receipt.Status != 1 {
 			continue
 		}
-		br.AddTxResult(p.parseTxReceipt(pbc, receipt))
+		bc.SetTxResult(receipt.TransactionIndex, p.parseTxReceipt(bc, receipt))
 	}
+	duration := time.Since(now).Milliseconds()
+	metrics.ParseBlockDurationMs.Observe(float64(duration))
+	logger.G.Info(fmt.Sprintf("parse block %d duration %dms", bc.HeightTime.HeightBigInt, duration))
 
-	duration := time.Since(now)
-	metrics.ParseBlockDurationMs.Observe(float64(duration.Milliseconds()))
-	logger.G.Info(fmt.Sprintf("parse block %d duration %dms", pbc.HeightTime.HeightBigInt, duration.Milliseconds()))
-
-	pbc.BlockResult = br
-	p.sequencer.CommitWithSequence(pbc, p)
+	p.sequencer.CommitWithSequence(bc, p)
 }
 
-func (p *blockParser) commitBlockResult(blockResult *types.BlockResult) {
-	blockInfo := blockResult.GetKafkaMessage()
+func (p *blockParser) commitBlockResult(bc *types.BlockContext) {
+	blockInfo := bc.GetKafkaMsg()
 
 	now := time.Now()
 	var err error
@@ -366,7 +305,7 @@ func (p *blockParser) commitBlockResult(blockResult *types.BlockResult) {
 	logger.G.Sugar().Debugf("block %d native token price %s", blockInfo.Height, blockInfo.NativeTokenPrice)
 	if blockInfo.UsefulInfo() {
 		logger.G.Info("summary",
-			zap.Uint64("block", blockResult.Height),
+			zap.Uint64("block", bc.HeightTime.Height),
 			zap.Float64("db duration", duration.Seconds()),
 			zap.Int("tokens", len(blockInfo.NewTokens)),
 			zap.Int("pairs", len(blockInfo.NewPairs)),
@@ -379,30 +318,29 @@ func (p *blockParser) commitBlockResult(blockResult *types.BlockResult) {
 
 	err = p.kafkaSender.Send(blockInfo)
 	if err != nil {
-		logger.G.Fatal("kafka send msg err", zap.Error(err), zap.Any("block", blockResult.Height))
+		logger.G.Fatal("send kafka msg err", zap.Error(err), zap.Any("block", bc.HeightTime.Height))
 	}
 
-	p.cache.SetFinishedBlock(blockResult.Height)
-	metrics.CurrentHeight.Set(float64(blockResult.Height))
+	p.cache.SetFinishedBlock(bc.HeightTime.Height)
+	metrics.CurrentHeight.Set(float64(bc.HeightTime.Height))
 	metrics.TxCntByBlock.Set(float64(len(blockInfo.Txs)))
 }
 
-func (p *blockParser) startHandleBlockResult(wg *sync.WaitGroup) {
+func (p *blockParser) startCommitBlockResult(wg *sync.WaitGroup) {
 	go func() {
 		defer wg.Done()
 		for {
-			blockContext, ok := <-p.outputQueue
+			bc, ok := <-p.outputQueue
 			if !ok {
-				logger.G.Info("commitBlockResultOld - output queue closed")
+				logger.G.Info("commitBlockResult - output queue closed")
 				return
 			}
 
-			p.commitBlockResult(blockContext.BlockResult)
+			p.commitBlockResult(bc)
 		}
 	}()
 }
 
 func (p *blockParser) doStop() {
-	p.workPool.Release()
 	close(p.outputQueue)
 }

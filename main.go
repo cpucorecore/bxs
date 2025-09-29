@@ -86,11 +86,6 @@ func main() {
 	logger.InitLogger()
 	metrics.Init(config.G.MetricsPort)
 
-	ethClient, dialEthErr := ethclient.Dial(config.G.Chain.Endpoint)
-	if dialEthErr != nil {
-		logger.G.Fatal("Failed to connect to the chain(http): %v", zap.Error(dialEthErr))
-	}
-
 	wsEthClient, err := ethclient.Dial(config.G.Chain.WsEndpoint)
 	if err != nil {
 		logger.G.Fatal("Failed to connect to the chain(ws): %v", zap.Error(err))
@@ -110,9 +105,6 @@ func main() {
 	})
 	cache := cache.NewTwoTierCache(redisCli)
 
-	contractCaller := service.NewContractCaller(ethClient, config.G.ContractCaller.Retry.GetRetryParams())
-
-	pairService := service.NewPairService(cache, contractCaller)
 	priceService := service.NewPriceService(config.G.PriceService.FromChain, cache, contractCallerArchive, ethClientArchive, config.G.PriceService.PoolSize)
 
 	sequencerForBlockHandler := sequencer.NewSequencer()
@@ -124,7 +116,6 @@ func main() {
 		cache,
 		sequencerForBlockHandler,
 		priceService,
-		pairService,
 		topicRouter,
 		kafkaSender,
 		createDBService(),
@@ -155,7 +146,7 @@ func main() {
 		blockGetter.Stop()
 	}()
 
-	var blockCtx *types.BlockCtx
+	var blockCtx *types.BlockContext
 	for {
 		blockCtx = blockGetter.Next()
 		if blockCtx == nil {

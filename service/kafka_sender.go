@@ -13,7 +13,7 @@ import (
 )
 
 type KafkaSender interface {
-	Send(block *types.BlockInfo) error
+	Send(block *types.KafkaMsg) error
 }
 
 type kafkaSender struct {
@@ -65,7 +65,7 @@ func (s *kafkaSender) processErrors() {
 	}()
 }
 
-func (s *kafkaSender) Send(block *types.BlockInfo) error {
+func (s *kafkaSender) Send(block *types.KafkaMsg) error {
 	if !s.conf.Enabled {
 		return nil
 	}

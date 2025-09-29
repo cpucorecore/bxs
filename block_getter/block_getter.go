@@ -27,7 +27,7 @@ type BlockGetter interface {
 	StartDispatch(startBlockNumber uint64)
 	Stop()
 	GetBlockAsync(blockNumber uint64)
-	Next() *types.BlockCtx
+	Next() *types.BlockContext
 }
 
 type blockGetter struct {
@@ -36,7 +36,7 @@ type blockGetter struct {
 	wsEthClient     *ethclient.Client
 	ethClientPool   EthClientPool
 	inputQueue      chan uint64
-	outputBuffer    chan *types.BlockCtx
+	outputBuffer    chan *types.BlockContext
 	workPool        *ants.Pool
 	cache           cache.BlockCache
 	stopped         SafeVar[bool]
@@ -66,7 +66,7 @@ func NewBlockGetter(
 		wsEthClient:     wsEthClient,
 		ethClientPool:   ethClientPool_,
 		inputQueue:      make(chan uint64, config.G.BlockGetter.QueueSize),
-		outputBuffer:    make(chan *types.BlockCtx, 10),
+		outputBuffer:    make(chan *types.BlockContext, 10),
 		workPool:        workPool,
 		cache:           cache,
 		blockHeaderChan: make(chan *ethtypes.Header, 100),
@@ -76,10 +76,10 @@ func NewBlockGetter(
 }
 
 func (bg *blockGetter) Commit(x sequencer.Sequenceable) {
-	bg.outputBuffer <- x.(*types.BlockCtx)
+	bg.outputBuffer <- x.(*types.BlockContext)
 }
 
-func (bg *blockGetter) getBlock(blockNumber uint64) (*types.BlockCtx, error) {
+func (bg *blockGetter) getBlock(blockNumber uint64) (*types.BlockContext, error) {
 	var (
 		block          *ethtypes.Block
 		blockReceipts  []*ethtypes.Receipt
@@ -113,24 +113,26 @@ func (bg *blockGetter) getBlock(blockNumber uint64) (*types.BlockCtx, error) {
 	if getBlockErr != nil {
 		return nil, getBlockErr
 	}
+
 	if getReceiptsErr != nil {
 		return nil, getReceiptsErr
 	}
-
 	metrics.BlockDelay.Observe(time.Now().Sub(time.Unix((int64)(block.Time()), 0)).Seconds())
 
 	transactions := block.Transactions()
-	return &types.BlockCtx{
-		Transactions:    transactions,
-		TransactionsLen: uint(len(transactions)),
-		Receipts:        blockReceipts,
+	transactionsLen := uint(len(transactions))
+	return &types.BlockContext{
 		HeightTime:      types.GetBlockHeightTime(block.Header()),
-		TxSenders:       make([]*common.Address, block.Transactions().Len()),
+		TransactionsLen: transactionsLen,
+		Transactions:    transactions,
+		Receipts:        blockReceipts,
+		Senders:         make([]common.Address, transactionsLen),
+		TxResults:       make([]*types.TxResult, transactionsLen),
 	}, nil
 }
 
-func (bg *blockGetter) getBlockWithRetry(blockNumber uint64) (*types.BlockCtx, error) {
-	return retry.DoWithData(func() (*types.BlockCtx, error) {
+func (bg *blockGetter) getBlockWithRetry(blockNumber uint64) (*types.BlockContext, error) {
+	return retry.DoWithData(func() (*types.BlockContext, error) {
 		return bg.getBlock(blockNumber)
 	}, bg.retryParams.Attempts, bg.retryParams.Delay)
 }
@@ -139,7 +141,7 @@ func (bg *blockGetter) GetBlockAsync(blockNumber uint64) {
 	bg.inputQueue <- blockNumber
 }
 
-func (bg *blockGetter) Next() *types.BlockCtx {
+func (bg *blockGetter) Next() *types.BlockContext {
 	return <-bg.outputBuffer
 }
 

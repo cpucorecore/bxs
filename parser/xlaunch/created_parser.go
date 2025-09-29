@@ -18,8 +18,12 @@ type CreatedEventParser struct {
 	pcommon.TopicUnpacker
 }
 
+func checkFactoryAddr(addr common.Address) bool {
+	return types.IsSameAddress(addr, chain_params.G.XLaunchFactoryAddress)
+}
+
 func (o *CreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
-	if !types.IsSameAddress(ethLog.Address, chain_params.G.XLaunchFactoryAddress) {
+	if !checkFactoryAddr(ethLog.Address) {
 		return nil, ErrWrongFactoryAddress
 	}
 
@@ -47,6 +51,6 @@ func (o *CreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
 
 	createdEvent.FormatString()
 
-	createdEvent.Pair = createdEvent.DoGetPair()
+	createdEvent.Pair = createdEvent.getPair()
 	return createdEvent, nil
 }

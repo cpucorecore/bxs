@@ -9,18 +9,13 @@ import (
 )
 
 var (
-	NativeToken = &Token{
-		Address:  ZeroAddress,
-		Creator:  ZeroAddress,
-		Symbol:   NativeTokenSymbol,
-		Decimals: Decimal18,
-	}
-
-	NativeTokenCore = &TokenTinyInfo{
+	NativeTokenTinyInfo = &TokenTinyInfo{
 		Address: ZeroAddress,
 		Symbol:  NativeTokenSymbol,
 		Decimal: Decimal18,
 	}
+	WBNBSymbol  = "WBNB"
+	WBNBDecimal = Decimal18
 )
 
 func IsSameAddress(address1, address2 common.Address) bool {
@@ -31,11 +26,11 @@ func IsWBNB(address common.Address) bool {
 	return IsSameAddress(address, chain_params.G.WBNBAddress)
 }
 
-func OrderToken0Token1Address(t0a, t1a common.Address) (common.Address, common.Address, bool) {
-	if IsSameAddress(t1a, chain_params.G.WBNBAddress) {
-		return t0a, t1a, false
+func OrderAddress(a0, a1 common.Address) (common.Address, common.Address, bool) {
+	if IsSameAddress(a1, chain_params.G.WBNBAddress) {
+		return a0, a1, false
 	}
-	return t1a, t0a, true
+	return a1, a0, true
 }
 
 func IsNativeToken(address common.Address) bool {

@@ -54,11 +54,7 @@ func (e *CreatedEvent) GetPair() *types.Pair {
 	return e.Pair
 }
 
-func (e *CreatedEvent) DoGetPair() *types.Pair {
-	if e.Pair != nil {
-		return e.Pair
-	}
-
+func (e *CreatedEvent) getPair() *types.Pair {
 	pair := &types.Pair{
 		Address: e.PoolAddress,
 		Token0: &types.TokenTinyInfo{
@@ -66,29 +62,24 @@ func (e *CreatedEvent) DoGetPair() *types.Pair {
 			Symbol:  e.Symbol,
 			Decimal: types.Decimal18,
 		},
-		Token1:     types.NativeTokenCore,
+		Token1:     types.NativeTokenTinyInfo,
 		Block:      e.BlockNumber,
-		BlockAt:    e.BlockTime,
 		ProtocolId: protocolId,
 	}
 
-	pair.InitAmount0, pair.InitAmount1 = types.ParseAmountsByPair(e.TokenInitAmount, e.BaseTokenInitAmount, pair)
+	pair.InitAmount0, pair.InitAmount1 = types.ParseAmount(e.TokenInitAmount, e.BaseTokenInitAmount, pair)
 	e.Pair = pair
 	return e.Pair
 }
 
 func (e *CreatedEvent) GetToken0() *types.Token {
-	return e.DoGetToken0()
-}
-
-func (e *CreatedEvent) DoGetToken0() *types.Token {
 	return &types.Token{
 		Address:     e.TokenAddress,
 		Creator:     e.Creator,
 		Name:        e.Name,
 		Symbol:      e.Symbol,
-		Decimals:    types.Decimal18,
-		TotalSupply: decimal.NewFromBigInt(e.TotalSupply, -int32(types.Decimal18)),
+		Decimals:    xLaunchTokenDecimal,
+		TotalSupply: decimal.NewFromBigInt(e.TotalSupply, -int32(xLaunchTokenDecimal)),
 		BlockNumber: e.BlockNumber,
 		BlockTime:   e.BlockTime,
 		Program:     protocolName,
@@ -116,7 +107,7 @@ func (e *CreatedEvent) GetPoolUpdate() *types.PoolUpdate {
 		Token0:   e.EventCommon.Pair.Token0.Address.String(),
 		Token1:   e.EventCommon.Pair.Token1.Address.String(),
 	}
-	u.Amount0, u.Amount1 = types.ParseAmountsByPair(e.TokenInitAmount, e.BaseTokenInitAmount, e.Pair)
+	u.Amount0, u.Amount1 = types.ParseAmount(e.TokenInitAmount, e.BaseTokenInitAmount, e.Pair)
 	return u
 }
 
