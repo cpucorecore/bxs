@@ -89,14 +89,18 @@ func mergePoolUpdates(poolUpdates []*PoolUpdate) []*PoolUpdate {
 }
 
 func (c *BlockContext) GetKafkaMsg() *KafkaMsg {
-	poolUpdates := make([]*PoolUpdate, 0, len(c.TxResults))
-	txs := make([]*orm.Tx, 0, len(c.TxResults))
-	migratedPools := make([]*MigratedPool, 0, len(c.TxResults))
-	actions := make([]*orm.Action, 0, len(c.TxResults))
-	ormPairs := make([]*orm.Pair, 0, len(c.TxResults))
-	ormTokens := make([]*orm.Token, 0, len(c.TxResults))
+	poolUpdates := make([]*PoolUpdate, 0, 256)
+	txs := make([]*orm.Tx, 0, 256)
+	migratedPools := make([]*MigratedPool, 0, 8)
+	actions := make([]*orm.Action, 0, 8)
+	ormPairs := make([]*orm.Pair, 0, 8)
+	ormTokens := make([]*orm.Token, 0, 8)
 
 	for _, txResult := range c.TxResults {
+		if txResult == nil {
+			continue
+		}
+
 		poolUpdates = append(poolUpdates, txResult.PoolUpdates...)
 		for _, event := range txResult.SwapEvents {
 			if event.CanGetTx() {

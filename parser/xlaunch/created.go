@@ -50,10 +50,6 @@ func (e *CreatedEvent) GetPairAddress() common.Address {
 	return e.PoolAddress
 }
 
-func (e *CreatedEvent) GetPair() *types.Pair {
-	return e.Pair
-}
-
 func (e *CreatedEvent) getPair() *types.Pair {
 	pair := &types.Pair{
 		Address: e.PoolAddress,
@@ -81,7 +77,6 @@ func (e *CreatedEvent) GetToken0() *types.Token {
 		Decimals:    xLaunchTokenDecimal,
 		TotalSupply: decimal.NewFromBigInt(e.TotalSupply, -int32(xLaunchTokenDecimal)),
 		BlockNumber: e.BlockNumber,
-		BlockTime:   e.BlockTime,
 		Program:     protocolName,
 		Filtered:    false,
 		URL:         e.URL,

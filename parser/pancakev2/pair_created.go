@@ -4,6 +4,7 @@ import (
 	"bxs/repository/orm"
 	"bxs/types"
 	"github.com/ethereum/go-ethereum/common"
+	"time"
 )
 
 const (
@@ -51,4 +52,9 @@ func (e *PairCreatedEvent) GetAction() *orm.Action {
 
 func (e *PairCreatedEvent) IsTokenReverse() bool {
 	return e.tokenReversed
+}
+
+func (e *PairCreatedEvent) SetBlockTime(blockTime time.Time) {
+	e.BlockTime = blockTime
+	e.Pair.BlockAt = e.BlockTime
 }
