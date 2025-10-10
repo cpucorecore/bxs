@@ -55,7 +55,8 @@ type Token struct {
 	BlockTime   time.Time
 	Program     string
 	Filtered    bool
-	URL         string `json:"url"`
+	Cid         string
+	Tid         string
 	Description string
 	Telegram    string
 	Twitter     string
@@ -101,6 +102,8 @@ func (t *Token) GetOrmToken() *orm.Token {
 		Block:       t.BlockNumber,
 		BlockAt:     t.BlockTime,
 		Program:     t.Program,
+		Cid:         t.Cid,
+		Tid:         t.Tid,
 		Telegram:    t.Telegram,
 		Twitter:     t.Twitter,
 		Website:     t.Website,

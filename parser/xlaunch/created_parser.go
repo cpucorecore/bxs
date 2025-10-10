@@ -42,11 +42,12 @@ func (o *CreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
 		TotalSupply:         eventInput[2].(*big.Int),
 		Name:                eventInput[3].(string),
 		Symbol:              eventInput[4].(string),
-		URL:                 eventInput[5].(string),
-		Description:         eventInput[6].(string),
-		Telegram:            eventInput[7].(string),
-		Twitter:             eventInput[8].(string),
-		Website:             eventInput[9].(string),
+		Cid:                 eventInput[5].(string),
+		Tid:                 eventInput[6].(string),
+		Description:         eventInput[7].(string),
+		Telegram:            eventInput[8].(string),
+		Twitter:             eventInput[9].(string),
+		Website:             eventInput[10].(string),
 	}
 
 	createdEvent.FormatString()

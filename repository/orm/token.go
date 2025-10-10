@@ -17,6 +17,8 @@ type Token struct {
 	Program     string    `json:"program"`
 	CreatedAt   time.Time `gorm:"autoCreateTime" json:"created_at,omitempty"`
 	MainPair    string    `json:"main_pair"`
+	Cid         string    `json:"cid"`
+	Tid         string    `json:"tid"`
 	Telegram    string    `json:"telegram"`
 	Twitter     string    `json:"twitter"`
 	Website     string    `json:"website"`

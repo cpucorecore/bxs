@@ -10,13 +10,14 @@ import (
 )
 
 const (
-	MaxNameLen        = 256
-	MaxSymbolLen      = 256
-	MaxURLLen         = 256
+	MaxNameLen        = 128
+	MaxSymbolLen      = 64
+	MaxCidLen         = 255
 	MaxDescriptionLen = 512
-	MaxTelegramLen    = 256
-	MaxTwitterLen     = 256
-	MaxWebsiteLen     = 256
+	MaxTelegramLen    = 255
+	MaxTwitterLen     = 255
+	MaxWebsiteLen     = 255
+	MaxTidLen         = 64
 )
 
 type CreatedEvent struct {
@@ -29,7 +30,8 @@ type CreatedEvent struct {
 	TotalSupply         *big.Int
 	Name                string
 	Symbol              string
-	URL                 string
+	Cid                 string
+	Tid                 string
 	Description         string
 	Telegram            string
 	Twitter             string
@@ -39,7 +41,8 @@ type CreatedEvent struct {
 func (e *CreatedEvent) FormatString() {
 	e.Name = util.TruncateToMaxChars(util.FormatUTF8(e.Name), MaxNameLen)
 	e.Symbol = util.TruncateToMaxChars(util.FormatUTF8(e.Symbol), MaxSymbolLen)
-	e.URL = util.TruncateToMaxChars(util.FormatUTF8(e.URL), MaxURLLen)
+	e.Cid = util.TruncateToMaxChars(util.FormatUTF8(e.Cid), MaxCidLen)
+	e.Tid = util.TruncateToMaxChars(util.FormatUTF8(e.Tid), MaxTidLen)
 	e.Description = util.TruncateToMaxChars(util.FormatUTF8(e.Description), MaxDescriptionLen)
 	e.Telegram = util.TruncateToMaxChars(util.FormatUTF8(e.Telegram), MaxTelegramLen)
 	e.Twitter = util.TruncateToMaxChars(util.FormatUTF8(e.Twitter), MaxTwitterLen)
@@ -79,7 +82,8 @@ func (e *CreatedEvent) GetToken0() *types.Token {
 		BlockNumber: e.BlockNumber,
 		Program:     protocolName,
 		Filtered:    false,
-		URL:         e.URL,
+		Cid:         e.Cid,
+		Tid:         e.Tid,
 		Description: e.Description,
 		Telegram:    e.Telegram,
 		Twitter:     e.Twitter,
