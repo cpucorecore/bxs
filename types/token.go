@@ -107,6 +107,7 @@ func (t *Token) GetOrmToken() *orm.Token {
 		Telegram:    t.Telegram,
 		Twitter:     t.Twitter,
 		Website:     t.Website,
+		Description: t.Description,
 	}
 }
 

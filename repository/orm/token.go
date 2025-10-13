@@ -19,6 +19,7 @@ type Token struct {
 	MainPair    string    `json:"main_pair"`
 	Cid         string    `json:"cid"`
 	Tid         string    `json:"tid"`
+	Description string    `json:"description"`
 	Telegram    string    `json:"telegram"`
 	Twitter     string    `json:"twitter"`
 	Website     string    `json:"website"`
