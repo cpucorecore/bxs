@@ -10,14 +10,14 @@ import (
 )
 
 const (
-	MaxNameLen        = 128
-	MaxSymbolLen      = 64
-	MaxCidLen         = 255
-	MaxDescriptionLen = 512
-	MaxTelegramLen    = 255
-	MaxTwitterLen     = 255
-	MaxWebsiteLen     = 255
-	MaxTidLen         = 64
+	MaxLenName        = 128
+	MaxLenSymbol      = 64
+	MaxLenCid         = 255
+	MaxLenDescription = 1024
+	MaxLenTelegram    = 255
+	MaxLenTwitter     = 255
+	MaxLenWebsite     = 255
+	MaxLenTid         = 64
 )
 
 type CreatedEvent struct {
@@ -39,14 +39,14 @@ type CreatedEvent struct {
 }
 
 func (e *CreatedEvent) FormatString() {
-	e.Name = util.TruncateToMaxChars(util.FormatUTF8(e.Name), MaxNameLen)
-	e.Symbol = util.TruncateToMaxChars(util.FormatUTF8(e.Symbol), MaxSymbolLen)
-	e.Cid = util.TruncateToMaxChars(util.FormatUTF8(e.Cid), MaxCidLen)
-	e.Tid = util.TruncateToMaxChars(util.FormatUTF8(e.Tid), MaxTidLen)
-	e.Description = util.TruncateToMaxChars(util.FormatUTF8(e.Description), MaxDescriptionLen)
-	e.Telegram = util.TruncateToMaxChars(util.FormatUTF8(e.Telegram), MaxTelegramLen)
-	e.Twitter = util.TruncateToMaxChars(util.FormatUTF8(e.Twitter), MaxTwitterLen)
-	e.Website = util.TruncateToMaxChars(util.FormatUTF8(e.Website), MaxWebsiteLen)
+	e.Name = util.TruncateToMaxChars(util.FormatUTF8(e.Name), MaxLenName)
+	e.Symbol = util.TruncateToMaxChars(util.FormatUTF8(e.Symbol), MaxLenSymbol)
+	e.Cid = util.TruncateToMaxChars(util.FormatUTF8(e.Cid), MaxLenCid)
+	e.Tid = util.TruncateToMaxChars(util.FormatUTF8(e.Tid), MaxLenTid)
+	e.Description = util.TruncateToMaxChars(util.FormatUTF8(e.Description), MaxLenDescription)
+	e.Telegram = util.TruncateToMaxChars(util.FormatUTF8(e.Telegram), MaxLenTelegram)
+	e.Twitter = util.TruncateToMaxChars(util.FormatUTF8(e.Twitter), MaxLenTwitter)
+	e.Website = util.TruncateToMaxChars(util.FormatUTF8(e.Website), MaxLenWebsite)
 }
 
 func (e *CreatedEvent) GetPairAddress() common.Address {
