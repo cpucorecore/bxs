@@ -83,7 +83,31 @@ func (t *Token) Equal(token *Token) bool {
 	if t.BlockNumber != token.BlockNumber {
 		return false
 	}
+	if !t.BlockTime.Equal(token.BlockTime) {
+		return false
+	}
 	if t.Program != token.Program {
+		return false
+	}
+	if t.Filtered != token.Filtered {
+		return false
+	}
+	if t.Cid != token.Cid {
+		return false
+	}
+	if t.Tid != token.Tid {
+		return false
+	}
+	if t.Description != token.Description {
+		return false
+	}
+	if t.Telegram != token.Telegram {
+		return false
+	}
+	if t.Twitter != token.Twitter {
+		return false
+	}
+	if t.Website != token.Website {
 		return false
 	}
 

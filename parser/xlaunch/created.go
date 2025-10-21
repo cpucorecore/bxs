@@ -13,11 +13,11 @@ const (
 	MaxLenName        = 128
 	MaxLenSymbol      = 64
 	MaxLenCid         = 255
+	MaxLenTid         = 64
 	MaxLenDescription = 1024
 	MaxLenTelegram    = 255
 	MaxLenTwitter     = 255
 	MaxLenWebsite     = 255
-	MaxLenTid         = 64
 )
 
 type CreatedEvent struct {
@@ -80,6 +80,7 @@ func (e *CreatedEvent) GetToken0() *types.Token {
 		Decimals:    xLaunchTokenDecimal,
 		TotalSupply: decimal.NewFromBigInt(e.TotalSupply, -int32(xLaunchTokenDecimal)),
 		BlockNumber: e.BlockNumber,
+		BlockTime:   e.BlockTime,
 		Program:     protocolName,
 		Filtered:    false,
 		Cid:         e.Cid,

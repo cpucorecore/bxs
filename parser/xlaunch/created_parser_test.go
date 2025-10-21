@@ -11,9 +11,9 @@ import (
 )
 
 func TestCreated(t *testing.T) {
-	// https://testnet.bscscan.com/tx/0x6144c88e93d9e8f055cd0abff16e1be204482096ffe9f64e1e30fa2154003ed9#eventlog#13
+	// https://testnet.bscscan.com/tx/0xff34b651bc1cf2b5cdd57cdb72dbe84ca953d4a1cd833f83441f2ac834d7cffc#eventlog#5
 	tc := service.GetTestContext()
-	ethLog := tc.GetEthLog("0x6144c88e93d9e8f055cd0abff16e1be204482096ffe9f64e1e30fa2154003ed9", 5)
+	ethLog := tc.GetEthLog("0xff34b651bc1cf2b5cdd57cdb72dbe84ca953d4a1cd833f83441f2ac834d7cffc", 5)
 	blockTimestamp := tc.GetBlockTimestamp(ethLog.BlockNumber)
 
 	event, pErr := topic2EventParser[ethLog.Topics[0]].Parse(ethLog)
@@ -21,30 +21,52 @@ func TestCreated(t *testing.T) {
 
 	event.SetBlockTime(time.Unix(int64(blockTimestamp), 0))
 	pair := event.GetPair()
-	pairWrap := tc.PairService.GetPairTokens(pair)
-	event.SetPair(pairWrap.Pair)
 
-	token0InitAmount, err := decimal.NewFromString("1066666666.666666666666666666")
+	token0InitAmount, err := decimal.NewFromString("10666666.666666666666666666")
 	require.NoError(t, err)
-	token1InitAmount, err := decimal.NewFromString("6.933333333333333333")
+	token1InitAmount, err := decimal.NewFromString("0.069333333333333333")
 	require.NoError(t, err)
+	expectBlockTime := time.Unix(int64(blockTimestamp), 0)
 	expectPair := &types.Pair{
-		Address:       common.HexToAddress("0x87485818145cEC5017a6466AAD2Ef5FEeA99aaae"),
+		Address:       common.HexToAddress("0x9182A7b564C43dbc2EE58Da9B270Fe13D1dd976e"),
 		TokenReversed: false,
-		Token0Core: &types.TokenCore{
-			Address:  common.HexToAddress("0xFA4dA14E995408Fd456928F4a0512AC348de1794"),
-			Symbol:   "T",
-			Decimals: 18,
+		Token0: &types.TokenTinyInfo{
+			Address: common.HexToAddress("0xDA519FB1b564A0CE2e10E48CEDbe5BFEd490623D"),
+			Symbol:  "zz",
+			Decimal: 18,
 		},
-		Token1Core:  types.NativeTokenTinyInfo,
+		Token1:      types.NativeTokenTinyInfo,
 		InitAmount0: token0InitAmount,
 		InitAmount1: token1InitAmount,
-		Block:       65762817,
-		BlockAt:     time.Unix(int64(blockTimestamp), 0),
+		Block:       69460293,
+		BlockAt:     expectBlockTime,
 		ProtocolId:  protocolId,
 		Filtered:    false,
 		FilterCode:  0,
 	}
 
-	require.True(t, pairWrap.Pair.Equal(expectPair), "expect: %v, actual: %v", expectPair, pairWrap.Pair)
+	require.True(t, pair.Equal(expectPair), "expect: %v, actual: %v", expectPair, pair)
+
+	token0 := event.GetToken0()
+	expectToken0TotalSupply, _ := decimal.NewFromString("10000000")
+	expectToken0 := &types.Token{
+		Address:     common.HexToAddress("0xDA519FB1b564A0CE2e10E48CEDbe5BFEd490623D"),
+		Creator:     common.HexToAddress("0x866925e79c447352711bF740183AA3Cc67371E16"),
+		Name:        "223",
+		Symbol:      "zz",
+		Decimals:    18,
+		TotalSupply: expectToken0TotalSupply,
+		BlockNumber: 69460293,
+		BlockTime:   expectBlockTime,
+		Program:     protocolName,
+		Filtered:    false,
+		Cid:         "bafkreibut3ftcrldii42ffjpbm3tvlvgvtw7nhdribgpgkrm5xpr5z67qm",
+		Tid:         "10392",
+		Description: "ss",
+		Telegram:    "",
+		Twitter:     "",
+		Website:     "",
+	}
+
+	require.True(t, token0.Equal(expectToken0), "expect: %v, actual: %v", expectToken0, token0)
 }
