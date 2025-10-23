@@ -22,6 +22,10 @@ func checkFactoryAddr(addr common.Address) bool {
 	return types.IsSameAddress(addr, chain_params.G.XLaunchFactoryAddress)
 }
 
+var (
+	initTokenAmount = big.NewInt(8e8) // 800000000
+)
+
 func (o *CreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
 	if !checkFactoryAddr(ethLog.Address) {
 		return nil, ErrWrongFactoryAddress
@@ -33,12 +37,14 @@ func (o *CreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
 	}
 
 	createdEvent := &CreatedEvent{
-		EventCommon:         types.EventCommonFromEthLog(ethLog),
-		PoolAddress:         common.BytesToAddress(ethLog.Topics[1].Bytes()[12:]),
-		Creator:             common.BytesToAddress(ethLog.Topics[2].Bytes()[12:]),
-		TokenAddress:        common.BytesToAddress(ethLog.Topics[3].Bytes()[12:]),
-		BaseTokenInitAmount: eventInput[0].(*big.Int),
-		TokenInitAmount:     eventInput[1].(*big.Int),
+		EventCommon:  types.EventCommonFromEthLog(ethLog),
+		PoolAddress:  common.BytesToAddress(ethLog.Topics[1].Bytes()[12:]),
+		Creator:      common.BytesToAddress(ethLog.Topics[2].Bytes()[12:]),
+		TokenAddress: common.BytesToAddress(ethLog.Topics[3].Bytes()[12:]),
+		//BaseTokenInitAmount: eventInput[0].(*big.Int),
+		//TokenInitAmount:     eventInput[1].(*big.Int),
+		BaseTokenInitAmount: types.ZeroBigInt, // 20251023: bsc=0, token=800000000
+		TokenInitAmount:     initTokenAmount,  // 20251023
 		TotalSupply:         eventInput[2].(*big.Int),
 		Name:                eventInput[3].(string),
 		Symbol:              eventInput[4].(string),

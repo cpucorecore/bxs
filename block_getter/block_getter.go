@@ -254,7 +254,7 @@ func (bg *blockGetter) startQueryNewHead() {
 			logger.G.Debug("New block", zap.Uint64("height", bn))
 			bg.setHeaderHeight(bn)
 			metrics.NewestHeight.Set(float64(bn))
-			time.Sleep(time.Millisecond * 200)
+			time.Sleep(time.Millisecond * 300) // TODO Rate limiting - rapid requests may trigger RCP provider blocking
 		}
 	}()
 }
