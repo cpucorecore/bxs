@@ -23,7 +23,8 @@ func checkFactoryAddr(addr common.Address) bool {
 }
 
 var (
-	initTokenAmount = big.NewInt(8e8) // 800000000
+	initTokenAmount    = big.NewInt(8e8) // 800000000 // 20251023
+	initTokenAmountWei = big.NewInt(0).Mul(initTokenAmount, big.NewInt(1e18))
 )
 
 func (o *CreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
@@ -43,8 +44,8 @@ func (o *CreatedEventParser) Parse(ethLog *ethtypes.Log) (types.Event, error) {
 		TokenAddress: common.BytesToAddress(ethLog.Topics[3].Bytes()[12:]),
 		//BaseTokenInitAmount: eventInput[0].(*big.Int),
 		//TokenInitAmount:     eventInput[1].(*big.Int),
-		BaseTokenInitAmount: types.ZeroBigInt, // 20251023: bsc=0, token=800000000
-		TokenInitAmount:     initTokenAmount,  // 20251023
+		BaseTokenInitAmount: types.ZeroBigInt,   // 20251023: bsc=0, token=800000000
+		TokenInitAmount:     initTokenAmountWei, // 20251023
 		TotalSupply:         eventInput[2].(*big.Int),
 		Name:                eventInput[3].(string),
 		Symbol:              eventInput[4].(string),

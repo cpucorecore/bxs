@@ -70,3 +70,10 @@ func TestCreated(t *testing.T) {
 
 	require.True(t, token0.Equal(expectToken0), "expect: %v, actual: %v", expectToken0, token0)
 }
+
+func TestInitAmount(t *testing.T) {
+	t.Log(initTokenAmount.String())
+	t.Log(initTokenAmountWei.String())
+	x1, x2 := types.ParseAmount(types.ZeroBigInt, initTokenAmountWei, &types.Pair{TokenReversed: false, Token0: &types.TokenTinyInfo{Decimal: 18}, Token1: &types.TokenTinyInfo{Decimal: 18}})
+	t.Log(x1, x2)
+}
